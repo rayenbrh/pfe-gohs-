@@ -1,0 +1,441 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg-base: #07060d;
+  --color-bg-surface: #0f0d1a;
+  --color-bg-elevated: #1a1730;
+  --color-bg-glass: rgba(138, 92, 246, 0.07);
+  --color-brand-600: #7c3aed;
+  --color-brand-500: #8b5cf6;
+  --color-text-primary: #e8e6f0;
+  --color-text-secondary: #9e97c0;
+  --color-border-default: rgba(138, 92, 246, 0.18);
+  --color-border-strong: rgba(138, 92, 246, 0.35);
+  --font-display: 'Orbitron', monospace;
+  --font-body: 'Space Grotesk', sans-serif;
+  --shadow-glow-purple: 0 0 24px rgba(124, 58, 237, 0.4);
+  --blur-glass: blur(16px);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-bg-base font-body text-text-primary antialiased;
+    position: relative;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    width: 1px;
+    height: 1px;
+    border-radius: 50%;
+    box-shadow:
+      3vw 8vh 0 0 rgba(232, 230, 240, 0.35),
+      12vw 15vh 0 0 rgba(232, 230, 240, 0.2),
+      22vw 5vh 0 0 rgba(232, 230, 240, 0.25),
+      35vw 22vh 0 0 rgba(232, 230, 240, 0.15),
+      48vw 12vh 0 0 rgba(232, 230, 240, 0.3),
+      58vw 28vh 0 0 rgba(232, 230, 240, 0.2),
+      72vw 8vh 0 0 rgba(232, 230, 240, 0.35),
+      88vw 18vh 0 0 rgba(232, 230, 240, 0.15),
+      95vw 32vh 0 0 rgba(232, 230, 240, 0.25),
+      7vw 35vh 0 0 rgba(232, 230, 240, 0.2),
+      18vw 42vh 0 0 rgba(232, 230, 240, 0.3),
+      28vw 55vh 0 0 rgba(232, 230, 240, 0.15),
+      42vw 48vh 0 0 rgba(232, 230, 240, 0.25),
+      55vw 62vh 0 0 rgba(232, 230, 240, 0.2),
+      68vw 45vh 0 0 rgba(232, 230, 240, 0.35),
+      82vw 58vh 0 0 rgba(232, 230, 240, 0.15),
+      92vw 72vh 0 0 rgba(232, 230, 240, 0.25),
+      5vw 68vh 0 0 rgba(232, 230, 240, 0.2),
+      15vw 78vh 0 0 rgba(232, 230, 240, 0.3),
+      25vw 88vh 0 0 rgba(232, 230, 240, 0.15),
+      38vw 75vh 0 0 rgba(232, 230, 240, 0.25),
+      52vw 82vh 0 0 rgba(232, 230, 240, 0.2),
+      65vw 92vh 0 0 rgba(232, 230, 240, 0.35),
+      78vw 85vh 0 0 rgba(232, 230, 240, 0.15),
+      90vw 95vh 0 0 rgba(232, 230, 240, 0.25),
+      10vw 25vh 0 0 rgba(159, 103, 250, 0.4),
+      45vw 35vh 0 0 rgba(159, 103, 250, 0.25),
+      75vw 38vh 0 0 rgba(159, 103, 250, 0.3),
+      30vw 65vh 0 0 rgba(159, 103, 250, 0.2),
+      60vw 70vh 0 0 rgba(159, 103, 250, 0.35),
+      85vw 55vh 0 0 rgba(159, 103, 250, 0.15),
+      2vw 52vh 0 0 rgba(232, 230, 240, 0.2),
+      8vw 92vh 0 0 rgba(232, 230, 240, 0.25),
+      14vw 62vh 0 0 rgba(232, 230, 240, 0.15),
+      20vw 32vh 0 0 rgba(232, 230, 240, 0.3),
+      32vw 18vh 0 0 rgba(232, 230, 240, 0.2),
+      40vw 8vh 0 0 rgba(232, 230, 240, 0.35),
+      50vw 38vh 0 0 rgba(232, 230, 240, 0.15),
+      62vw 15vh 0 0 rgba(232, 230, 240, 0.25),
+      70vw 25vh 0 0 rgba(232, 230, 240, 0.2),
+      80vw 42vh 0 0 rgba(232, 230, 240, 0.3),
+      86vw 68vh 0 0 rgba(232, 230, 240, 0.15),
+      94vw 48vh 0 0 rgba(232, 230, 240, 0.25),
+      6vw 45vh 0 0 rgba(232, 230, 240, 0.2),
+      16vw 55vh 0 0 rgba(232, 230, 240, 0.35),
+      24vw 72vh 0 0 rgba(232, 230, 240, 0.15),
+      34vw 92vh 0 0 rgba(232, 230, 240, 0.25),
+      44vw 68vh 0 0 rgba(232, 230, 240, 0.2),
+      54vw 52vh 0 0 rgba(232, 230, 240, 0.3),
+      64vw 78vh 0 0 rgba(232, 230, 240, 0.15),
+      74vw 62vh 0 0 rgba(232, 230, 240, 0.25),
+      84vw 28vh 0 0 rgba(232, 230, 240, 0.2),
+      96vw 82vh 0 0 rgba(232, 230, 240, 0.35),
+      1vw 18vh 0 0 rgba(232, 230, 240, 0.15),
+      9vw 38vh 0 0 rgba(232, 230, 240, 0.25),
+      17vw 48vh 0 0 rgba(232, 230, 240, 0.2),
+      27vw 28vh 0 0 rgba(232, 230, 240, 0.3),
+      37vw 58vh 0 0 rgba(232, 230, 240, 0.15),
+      47vw 88vh 0 0 rgba(232, 230, 240, 0.25),
+      57vw 42vh 0 0 rgba(232, 230, 240, 0.2),
+      67vw 32vh 0 0 rgba(232, 230, 240, 0.35),
+      77vw 52vh 0 0 rgba(232, 230, 240, 0.15),
+      87vw 78vh 0 0 rgba(232, 230, 240, 0.25),
+      97vw 22vh 0 0 rgba(232, 230, 240, 0.2),
+      4vw 82vh 0 0 rgba(232, 230, 240, 0.3),
+      11vw 58vh 0 0 rgba(232, 230, 240, 0.15),
+      19vw 12vh 0 0 rgba(232, 230, 240, 0.25),
+      29vw 38vh 0 0 rgba(232, 230, 240, 0.2),
+      39vw 72vh 0 0 rgba(232, 230, 240, 0.35),
+      49vw 22vh 0 0 rgba(232, 230, 240, 0.15),
+      59vw 88vh 0 0 rgba(232, 230, 240, 0.25),
+      69vw 48vh 0 0 rgba(232, 230, 240, 0.2),
+      79vw 18vh 0 0 rgba(232, 230, 240, 0.3),
+      89vw 62vh 0 0 rgba(232, 230, 240, 0.15),
+      99vw 38vh 0 0 rgba(232, 230, 240, 0.25),
+      13vw 85vh 0 0 rgba(34, 211, 238, 0.35),
+      53vw 8vh 0 0 rgba(34, 211, 238, 0.25),
+      73vw 88vh 0 0 rgba(34, 211, 238, 0.3),
+      33vw 48vh 0 0 rgba(34, 211, 238, 0.2),
+      63vw 58vh 0 0 rgba(34, 211, 238, 0.35),
+      23vw 8vh 0 0 rgba(232, 230, 240, 0.2),
+      43vw 28vh 0 0 rgba(232, 230, 240, 0.25),
+      83vw 48vh 0 0 rgba(232, 230, 240, 0.15),
+      3vw 72vh 0 0 rgba(232, 230, 240, 0.3),
+      93vw 12vh 0 0 rgba(232, 230, 240, 0.2);
+  }
+
+  body > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  ::selection {
+    background: rgba(124, 58, 237, 0.3);
+    color: var(--color-text-primary);
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg-elevated);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-brand-600);
+    border-radius: 2px;
+  }
+
+  html[dir='rtl'] .ms-auto {
+    margin-inline-start: auto;
+  }
+
+  html[dir='rtl'] .me-auto {
+    margin-inline-end: auto;
+  }
+
+  html[dir='rtl'] .ps-4 {
+    padding-inline-start: 1rem;
+  }
+
+  html[dir='rtl'] .pe-4 {
+    padding-inline-end: 1rem;
+  }
+
+  html[dir='rtl'] body {
+    font-family: var(--font-arabic), var(--font-body), 'Space Grotesk', sans-serif;
+  }
+
+  html[dir='rtl'] .font-display,
+  html[dir='rtl'] h1,
+  html[dir='rtl'] h2,
+  html[dir='rtl'] h3 {
+    font-family: var(--font-arabic), 'Noto Sans Arabic', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+}
+
+@layer components {
+  .glass {
+    background: var(--color-bg-glass);
+    border: 1px solid var(--color-border-default);
+    backdrop-filter: var(--blur-glass);
+    -webkit-backdrop-filter: var(--blur-glass);
+  }
+
+  .glow-border {
+    border: 1px solid var(--color-border-strong);
+    box-shadow: 0 0 12px rgba(124, 58, 237, 0.3);
+  }
+
+  .section-grid {
+    background-image: linear-gradient(rgba(138, 92, 246, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(138, 92, 246, 0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .range-brand {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: transparent;
+    pointer-events: none;
+  }
+
+  .range-brand::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #7c3aed;
+    box-shadow: 0 0 12px rgba(124, 58, 237, 0.5);
+    pointer-events: auto;
+    cursor: pointer;
+  }
+
+  .range-brand::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #7c3aed;
+    border: none;
+    pointer-events: auto;
+    cursor: pointer;
+  }
+
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pb-mobile-nav {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+
+  .safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  /* ============================================
+     INOVA RIDE — GLOBAL GLOW SYSTEM
+     Rule: ALL glows are fixed or use overflow:visible
+     NEVER put a glow inside overflow:hidden
+     ============================================ */
+
+  .page-ambient {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(
+        ellipse 80% 40% at 50% 0%,
+        rgba(124, 58, 237, 0.13) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 60% 30% at 20% 100%,
+        rgba(124, 58, 237, 0.06) 0%,
+        transparent 55%
+      ),
+      radial-gradient(
+        ellipse 60% 30% at 80% 100%,
+        rgba(124, 58, 237, 0.06) 0%,
+        transparent 55%
+      );
+  }
+
+  .section-transition-glow {
+    position: relative;
+    height: 0;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .section-transition-glow::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform: translate(-50%, -50%);
+    width: 900px;
+    height: 350px;
+    background: radial-gradient(
+      ellipse 70% 100% at 50% 50%,
+      rgba(124, 58, 237, 0.11) 0%,
+      rgba(124, 58, 237, 0.03) 50%,
+      transparent 72%
+    );
+  }
+}
+
+@layer utilities {
+  @media (max-width: 640px) {
+    button,
+    a[href],
+    [role='button'],
+    input,
+    select,
+    textarea {
+      touch-action: manipulation;
+    }
+
+    input,
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+}
+
+/* NProgress bar — branded to Inova Ride */
+#nprogress {
+  pointer-events: none;
+}
+
+#nprogress .bar {
+  background: linear-gradient(90deg, #7c3aed, #22d3ee);
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  box-shadow:
+    0 0 12px rgba(124, 58, 237, 0.7),
+    0 0 6px rgba(34, 211, 238, 0.5);
+}
+
+#nprogress .peg {
+  display: block;
+  position: absolute;
+  right: 0;
+  width: 100px;
+  height: 100%;
+  box-shadow:
+    0 0 10px #7c3aed,
+    0 0 5px #7c3aed;
+  opacity: 1;
+  transform: rotate(3deg) translate(0, -4px);
+}
+
+@keyframes ir-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ir-pulse-ring {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes ir-dot-bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  40% {
+    transform: translateY(-7px);
+    opacity: 1;
+  }
+}
+
+@keyframes ir-shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+.ir-loader-fade-in {
+  animation: ir-loader-fade-in 0.4s ease-out both;
+}
+
+.ir-loader-scale-in {
+  animation: ir-loader-scale-in 0.3s ease-out 0.15s both;
+}
+
+.ir-loader-fade-in-delayed {
+  animation: ir-loader-fade-in 0.3s ease-out 0.25s both;
+}
+
+@keyframes ir-loader-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ir-loader-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+section {
+  overflow: visible !important;
+  margin-top: 0;
+}
+
+section + section {
+  margin-top: 0;
+}

@@ -1,0 +1,18 @@
+import { createNavigation } from 'next-intl/navigation';
+import { defineRouting } from 'next-intl/routing';
+
+export const routing = defineRouting({
+  locales: ['fr', 'en', 'ar'],
+  defaultLocale: 'fr',
+  localePrefix: 'always',
+  localeDetection: true,
+  localeCookie: {
+    name: 'inova-locale',
+    maxAge: 60 * 60 * 24 * 365,
+  },
+});
+
+export type Locale = (typeof routing.locales)[number];
+
+export const { Link, redirect, usePathname, useRouter, getPathname } =
+  createNavigation(routing);

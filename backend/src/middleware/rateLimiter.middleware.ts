@@ -1,0 +1,34 @@
+import rateLimit from 'express-rate-limit';
+
+export const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    status: 'fail',
+    message: 'Too many requests, please try again later.',
+  },
+});
+
+export const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    status: 'fail',
+    message: 'Too many login attempts. Try again in 15 minutes.',
+  },
+});
+
+export const uploadLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 50,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    status: 'fail',
+    message: 'Upload limit exceeded. Please try again later.',
+  },
+});

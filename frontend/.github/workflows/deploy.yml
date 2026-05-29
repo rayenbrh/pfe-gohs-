@@ -1,0 +1,49 @@
+# Mirror of repo-root .github/workflows/frontend-deploy.yml (for frontend-only clones).
+name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:5000' }}
+
+      - name: Trigger EasyPanel redeploy
+        if: success()
+        env:
+          EASYPANEL_WEBHOOK_URL: ${{ secrets.EASYPANEL_WEBHOOK_URL }}
+        run: |
+          if [ -z "$EASYPANEL_WEBHOOK_URL" ]; then
+            echo "EASYPANEL_WEBHOOK_URL secret is not set — skipping webhook."
+            exit 0
+          fi
+          curl -fsS -X POST "$EASYPANEL_WEBHOOK_URL"
