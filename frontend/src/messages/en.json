@@ -30,7 +30,7 @@
     "email": "contact@inovaride.com",
     "email_value": "contact@inovaride.com",
     "copyright": "© 2026 Inova Ride. All rights reserved.",
-    "built_with": "Built with NextFrame"
+    "built_with": "Built with Inovibe"
   },
   "hero": {
     "tagline": "Rent the future",
@@ -246,6 +246,7 @@
     "action_new_reservation": "New Reservation",
     "action_add_client": "Add Client",
     "action_generate_report": "Generate Report",
+    "action_maintenance": "Maintenance",
     "maintenance_due": "Maintenance Due",
     "due_soon": "Due soon",
     "recent_reservations": "Recent Reservations",
@@ -299,7 +300,7 @@
     "km": "km",
     "admin_user": "Admin user",
     "role_admin": "Administrator",
-    "role_staff": "Staff",
+    "role_staff": "Employee",
     "slide": "Slide {number}",
     "select_placeholder": "—",
     "search_suffix": "…",

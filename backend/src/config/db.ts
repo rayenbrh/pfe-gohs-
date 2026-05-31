@@ -1,17 +1,22 @@
 import mongoose from 'mongoose';
 
 import logger from './logger';
+import { closeAllAgencyConnections } from './tenantDB';
 
 const MAX_RETRIES = 5;
 const RETRY_DELAY_MS = 5000;
 
 let isConnecting = false;
 
+/**
+ * Connects to the master MongoDB database (holds agencies + super admins).
+ * Uses MASTER_MONGODB_URI if set, falls back to MONGODB_URI.
+ */
 export async function connectDB(): Promise<void> {
-  const uri = process.env.MONGODB_URI;
+  const uri = process.env.MASTER_MONGODB_URI ?? process.env.MONGODB_URI;
 
   if (!uri) {
-    logger.error('MONGODB_URI is not defined in environment variables');
+    logger.error('MASTER_MONGODB_URI (or MONGODB_URI) is not defined in environment variables');
     process.exit(1);
   }
 
@@ -78,6 +83,7 @@ async function reconnectDB(): Promise<void> {
 }
 
 export async function disconnectDB(): Promise<void> {
+  await closeAllAgencyConnections();
   await mongoose.disconnect();
   logger.info('MongoDB disconnected');
 }

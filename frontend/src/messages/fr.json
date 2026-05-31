@@ -30,7 +30,7 @@
     "email": "contact@inovaride.com",
     "email_value": "contact@inovaride.com",
     "copyright": "© 2026 Inova Ride. Tous droits réservés.",
-    "built_with": "Built with NextFrame"
+    "built_with": "Built with Innovibe"
   },
   "hero": {
     "tagline": "Louez l'avenir",
@@ -246,6 +246,7 @@
     "action_new_reservation": "Nouvelle réservation",
     "action_add_client": "Ajouter un client",
     "action_generate_report": "Générer un rapport",
+    "action_maintenance": "Maintenance",
     "maintenance_due": "Maintenance à prévoir",
     "due_soon": "Bientôt",
     "recent_reservations": "Réservations récentes",
@@ -299,7 +300,7 @@
     "km": "km",
     "admin_user": "Utilisateur admin",
     "role_admin": "Administrateur",
-    "role_staff": "Personnel",
+    "role_staff": "Employé",
     "slide": "Diapositive {number}",
     "select_placeholder": "—",
     "search_suffix": "…",

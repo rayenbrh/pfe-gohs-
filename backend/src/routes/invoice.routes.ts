@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 
 import * as invoiceController from '../controllers/invoice.controller';
 import { requireRole, verifyToken } from '../middleware/auth.middleware';
@@ -28,7 +28,7 @@ router.use(verifyToken);
  *       200:
  *         description: Paginated invoices
  */
-router.get('/', requireRole('admin', 'super_admin'), invoiceController.getInvoices);
+router.get('/', requireRole('admin', 'admin'), invoiceController.getInvoices);
 
 /**
  * @swagger
@@ -44,7 +44,7 @@ router.get('/', requireRole('admin', 'super_admin'), invoiceController.getInvoic
  */
 router.post(
   '/',
-  requireRole('admin', 'super_admin', 'agent'),
+  requireRole('admin', 'admin', 'employee'),
   validate(createInvoiceSchema),
   invoiceController.createInvoice,
 );
@@ -68,7 +68,7 @@ router.post(
  */
 router.get(
   '/:id/download',
-  requireRole('admin', 'super_admin', 'agent'),
+  requireRole('admin', 'admin', 'employee'),
   validate(invoiceIdSchema, 'params'),
   invoiceController.downloadInvoice,
 );
@@ -92,7 +92,7 @@ router.get(
  */
 router.post(
   '/:id/generate-pdf',
-  requireRole('admin', 'super_admin', 'agent'),
+  requireRole('admin', 'admin', 'employee'),
   validate(invoiceIdSchema, 'params'),
   invoiceController.generateInvoicePdf,
 );
@@ -116,7 +116,7 @@ router.post(
  */
 router.patch(
   '/:id/status',
-  requireRole('admin', 'super_admin'),
+  requireRole('admin', 'admin'),
   validate(invoiceIdSchema, 'params'),
   validate(updateInvoiceStatusSchema),
   invoiceController.updateInvoiceStatus,
@@ -141,9 +141,10 @@ router.patch(
  */
 router.get(
   '/:id',
-  requireRole('admin', 'super_admin', 'agent'),
+  requireRole('admin', 'admin', 'employee'),
   validate(invoiceIdSchema, 'params'),
   invoiceController.getInvoice,
 );
 
 export default router;
+

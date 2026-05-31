@@ -1,5 +1,6 @@
 import mongoose, { Schema, Types } from 'mongoose';
 
+import { getTenantConnection } from '../config/tenantDB';
 import type { IReservationDocument, IReservationModel } from '../types/models';
 import { generateSequentialId } from '../utils/generateId';
 import { schemaOptionsFor } from '../utils/schemaOptions';
@@ -96,9 +97,14 @@ reservationSchema.statics.checkAvailability = async function (
   return !overlap;
 };
 
+export function getReservationModel(conn?: mongoose.Connection): IReservationModel {
+  const c = conn ?? getTenantConnection();
+  if (c.models.Reservation) return c.models.Reservation as IReservationModel;
+  return c.model<IReservationDocument, IReservationModel>('Reservation', reservationSchema);
+}
+
 const Reservation = mongoose.model<IReservationDocument, IReservationModel>(
   'Reservation',
   reservationSchema,
 );
-
 export default Reservation;

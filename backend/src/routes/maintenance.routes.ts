@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 
 import * as maintenanceController from '../controllers/maintenance.controller';
 import { protect, restrictTo } from '../middleware/auth.middleware';
@@ -42,7 +42,7 @@ router.use(protect);
  */
 router.get(
   '/',
-  restrictTo('admin', 'super_admin'),
+  restrictTo('admin', 'admin'),
   maintenanceController.getMaintenanceLogs,
 );
 
@@ -65,7 +65,7 @@ router.get(
  */
 router.get(
   '/vehicle/:vehicleId',
-  restrictTo('admin', 'super_admin'),
+  restrictTo('admin', 'admin'),
   validate(vehicleIdParamSchema, 'params'),
   maintenanceController.getVehicleMaintenanceHistory,
 );
@@ -89,7 +89,7 @@ router.get(
  */
 router.get(
   '/:id',
-  restrictTo('admin', 'super_admin'),
+  restrictTo('admin', 'admin'),
   validate(maintenanceIdSchema, 'params'),
   maintenanceController.getMaintenanceLog,
 );
@@ -114,7 +114,7 @@ router.get(
  */
 router.post(
   '/',
-  restrictTo('admin', 'super_admin', 'agent'),
+  restrictTo('admin', 'admin', 'employee'),
   validate(createMaintenanceSchema),
   maintenanceController.createMaintenanceLog,
 );
@@ -138,7 +138,7 @@ router.post(
  */
 router.patch(
   '/:id',
-  restrictTo('admin', 'super_admin'),
+  restrictTo('admin', 'admin'),
   validate(maintenanceIdSchema, 'params'),
   validate(updateMaintenanceSchema),
   maintenanceController.updateMaintenanceLog,
@@ -163,9 +163,10 @@ router.patch(
  */
 router.delete(
   '/:id',
-  restrictTo('super_admin'),
+  restrictTo('admin'),
   validate(maintenanceIdSchema, 'params'),
   maintenanceController.deleteMaintenanceLog,
 );
 
 export default router;
+

@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'super_admin' | 'agent' | 'staff' | 'client';
+export type UserRole = 'super_admin' | 'admin' | 'employee' | 'client';
 
 export interface User {
   _id: string;
@@ -6,18 +6,32 @@ export interface User {
   email: string;
   role: UserRole;
   avatarUrl?: string;
+  agencySlug?: string;
+}
+
+export function isAdminOrEmployee(role: UserRole): boolean {
+  return role === 'admin' || role === 'employee';
 }
 
 export function isAdminRole(role: UserRole): boolean {
-  return role === 'admin' || role === 'super_admin' || role === 'agent';
+  return role === 'admin';
+}
+
+export function isSuperAdmin(role: UserRole): boolean {
+  return role === 'super_admin';
 }
 
 export function normalizeUser(raw: Record<string, unknown>): User {
+  const firstName = raw.firstName ? String(raw.firstName) : '';
+  const lastName = raw.lastName ? String(raw.lastName) : '';
+  const name = String(raw.name ?? (firstName ? `${firstName} ${lastName}`.trim() : '') ?? '');
+
   return {
     _id: String(raw._id ?? raw.id ?? ''),
-    name: String(raw.name ?? ''),
+    name,
     email: String(raw.email ?? ''),
     role: (raw.role as UserRole) ?? 'client',
     avatarUrl: raw.avatarUrl ? String(raw.avatarUrl) : undefined,
+    agencySlug: raw.agencySlug ? String(raw.agencySlug) : undefined,
   };
 }

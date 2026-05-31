@@ -16,6 +16,7 @@ import type {
   RevenueChartPoint,
 } from '@/types/admin';
 import type { ReservationStatus } from '@/types/reservation';
+import { useAuthStore } from '@/stores/authStore';
 
 interface BackendStats {
   vehicles?: { total?: number; available?: number };
@@ -23,6 +24,17 @@ interface BackendStats {
   clients?: { total?: number };
   revenue?: { thisMonth?: number };
   payments?: { pending?: number };
+  // flat fields from new stats service
+  totalVehicles?: number;
+  availableVehicles?: number;
+  activeReservations?: number;
+  totalClients?: number;
+  monthlyRevenue?: number;
+  revenueTrend?: number;
+  reservationsTrend?: number;
+  vehiclesTrend?: number;
+  clientsTrend?: number;
+  pendingPayments?: number;
 }
 
 const RESERVATION_STATUSES: ReservationStatus[] = [
@@ -57,6 +69,13 @@ export const EMPTY_RESERVATION_STATUS_MAP: Record<ReservationStatus, number> = {
   cancelled: 0,
 };
 
+/** Returns /api/agency/<slug> prefix, or /api as fallback. */
+function agencyBase(): string {
+  const slug = useAuthStore.getState().user?.agencySlug
+    ?? useAuthStore.getState().agency?.slug;
+  return slug ? `/api/agency/${slug}` : '/api';
+}
+
 function devFallback<T>(label: string, fallback: T): T {
   if (process.env.NODE_ENV === 'development') {
     console.warn(`[admin] ${label} — using development fallback data`);
@@ -83,15 +102,15 @@ async function withDevFallback<T>(
 
 export function mapAdminStats(raw: BackendStats): AdminStats {
   return {
-    monthlyRevenue: raw.revenue?.thisMonth ?? 0,
-    revenueTrend: 0,
-    activeReservations: raw.reservations?.active ?? 0,
-    reservationsTrend: 0,
-    availableVehicles: raw.vehicles?.available ?? 0,
-    totalVehicles: raw.vehicles?.total ?? 0,
-    vehiclesTrend: 0,
-    totalClients: raw.clients?.total ?? 0,
-    clientsTrend: 0,
+    monthlyRevenue: raw.monthlyRevenue ?? raw.revenue?.thisMonth ?? 0,
+    revenueTrend: raw.revenueTrend ?? 0,
+    activeReservations: raw.activeReservations ?? raw.reservations?.active ?? 0,
+    reservationsTrend: raw.reservationsTrend ?? 0,
+    availableVehicles: raw.availableVehicles ?? raw.vehicles?.available ?? 0,
+    totalVehicles: raw.totalVehicles ?? raw.vehicles?.total ?? 0,
+    vehiclesTrend: raw.vehiclesTrend ?? 0,
+    totalClients: raw.totalClients ?? raw.clients?.total ?? 0,
+    clientsTrend: raw.clientsTrend ?? 0,
   };
 }
 
@@ -177,7 +196,7 @@ export async function fetchAdminStats(): Promise<AdminStats> {
   return withDevFallback(
     'stats',
     async () => {
-      const { data } = await api.get('/admin/stats');
+      const { data } = await api.get(`${agencyBase()}/admin/stats`);
       return mapAdminStats(unwrapApiResponse<BackendStats>(data));
     },
     EMPTY_ADMIN_STATS,
@@ -189,7 +208,7 @@ export async function fetchRecentReservations(): Promise<RecentReservationRow[]>
   return withDevFallback(
     'recent reservations',
     async () => {
-      const { data } = await api.get('/reservations', {
+      const { data } = await api.get(`${agencyBase()}/reservations`, {
         params: { limit: 8, sort: '-createdAt' },
       });
       const payload = unwrapApiResponse<{ reservations?: unknown[] } | unknown[]>(data);
@@ -204,7 +223,7 @@ export async function fetchRevenueChart(): Promise<RevenueChartPoint[]> {
   return withDevFallback(
     'revenue chart',
     async () => {
-      const { data } = await api.get('/admin/charts/revenue');
+      const { data } = await api.get(`${agencyBase()}/admin/charts/revenue`);
       const points = unwrapApiResponse<RevenueChartPoint[]>(data);
       return Array.isArray(points) ? points : [];
     },
@@ -217,7 +236,7 @@ export async function fetchReservationStatus(): Promise<ReservationStatusCount[]
   return withDevFallback(
     'reservation status',
     async () => {
-      const { data } = await api.get('/admin/charts/reservations');
+      const { data } = await api.get(`${agencyBase()}/admin/charts/reservations`);
       const payload = unwrapApiResponse<Record<string, number>>(data);
       return mapReservationStatus(payload);
     },
@@ -230,7 +249,7 @@ export async function fetchFleetAvailability(): Promise<FleetAvailabilityCategor
   return withDevFallback(
     'fleet availability',
     async () => {
-      const { data } = await api.get('/admin/fleet/availability');
+      const { data } = await api.get(`${agencyBase()}/admin/fleet/availability`);
       return mapFleetAvailability(
         unwrapApiResponse<{ fleet?: Array<{ category: string; isAvailable: boolean }> }>(data),
       );
@@ -244,7 +263,9 @@ export async function fetchMaintenanceAlerts(): Promise<MaintenanceAlert[]> {
   return withDevFallback(
     'maintenance alerts',
     async () => {
-      const { data } = await api.get('/maintenance', { params: { upcoming: 'true' } });
+      const { data } = await api.get(`${agencyBase()}/maintenance`, {
+        params: { upcoming: 'true' },
+      });
       return mapMaintenanceAlerts(
         unwrapApiResponse<{
           vehicles?: Array<{

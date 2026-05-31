@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 
 import * as vehicleController from '../controllers/vehicle.controller';
 import { requireRole, verifyToken } from '../middleware/auth.middleware';
@@ -78,7 +78,7 @@ router.get(
 router.get(
   '/:id/reservations',
   verifyToken,
-  requireRole('admin', 'super_admin', 'agent'),
+  requireRole('admin', 'admin', 'employee'),
   validate(vehicleIdSchema, 'params'),
   vehicleController.getVehicleReservations,
 );
@@ -95,7 +95,7 @@ router.get(
 router.get(
   '/:id/maintenance',
   verifyToken,
-  requireRole('admin', 'super_admin', 'agent'),
+  requireRole('admin', 'admin', 'employee'),
   validate(vehicleIdSchema, 'params'),
   vehicleController.getVehicleMaintenance,
 );
@@ -134,7 +134,7 @@ router.get('/:id', validate(vehicleIdSchema, 'params'), vehicleController.getVeh
 router.post(
   '/',
   verifyToken,
-  requireRole('admin', 'super_admin'),
+  requireRole('admin', 'admin'),
   validate(createVehicleSchema),
   vehicleController.createVehicle,
 );
@@ -151,7 +151,7 @@ router.post(
 router.patch(
   '/:id/availability',
   verifyToken,
-  requireRole('admin', 'super_admin', 'agent'),
+  requireRole('admin', 'admin', 'employee'),
   validate(vehicleIdSchema, 'params'),
   validate(updateAvailabilitySchema),
   vehicleController.updateAvailability,
@@ -169,7 +169,7 @@ router.patch(
 router.patch(
   '/:id',
   verifyToken,
-  requireRole('admin', 'super_admin'),
+  requireRole('admin', 'admin'),
   validate(vehicleIdSchema, 'params'),
   validate(updateVehicleSchema),
   vehicleController.updateVehicle,
@@ -187,9 +187,10 @@ router.patch(
 router.delete(
   '/:id',
   verifyToken,
-  requireRole('super_admin'),
+  requireRole('admin'),
   validate(vehicleIdSchema, 'params'),
   vehicleController.deleteVehicle,
 );
 
 export default router;
+

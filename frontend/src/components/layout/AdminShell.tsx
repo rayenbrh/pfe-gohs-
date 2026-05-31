@@ -6,7 +6,7 @@ import { Spinner } from '@/components/ui/Spinner';
 import { useRouter } from '@/i18n/routing';
 import { COLORS } from '@/lib/design-system';
 import { useAuthStore } from '@/stores/authStore';
-import { isAdminRole } from '@/types/user';
+import { isAdminOrEmployee } from '@/types/user';
 
 import { AdminMobileNavSheet } from './AdminMobileNavSheet';
 import { AdminSidebar } from './AdminSidebar';
@@ -28,12 +28,19 @@ export function AdminShell({ children }: AdminShellProps) {
     if (isLoading) return;
 
     if (!isAuthenticated) {
-      router.replace('/auth/login');
+      const slug = typeof localStorage !== 'undefined'
+        ? localStorage.getItem('agency_slug')
+        : null;
+      if (slug) {
+        router.replace(`/agency/${slug}/auth/login` as Parameters<typeof router.replace>[0]);
+      } else {
+        router.replace('/auth/login');
+      }
       setGuardReady(false);
       return;
     }
 
-    if (!user || !isAdminRole(user.role)) {
+    if (!user || !isAdminOrEmployee(user.role)) {
       router.replace('/');
       setGuardReady(false);
       return;

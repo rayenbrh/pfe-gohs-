@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 
 import * as uploadController from '../controllers/upload.controller';
 import { protect, restrictTo } from '../middleware/auth.middleware';
@@ -57,7 +57,7 @@ router.use(protect, uploadLimiter);
  */
 router.post(
   '/vehicle/:vehicleId/images',
-  restrictTo('admin', 'super_admin'),
+  restrictTo('admin', 'admin'),
   validate(vehicleIdParamSchema, 'params'),
   vehicleImageUpload,
   uploadController.uploadVehicleImages,
@@ -91,7 +91,7 @@ router.post(
  */
 router.delete(
   '/vehicle/:vehicleId/image',
-  restrictTo('admin', 'super_admin'),
+  restrictTo('admin', 'admin'),
   validate(vehicleIdParamSchema, 'params'),
   validate(deleteVehicleImageSchema),
   uploadController.deleteVehicleImage,
@@ -123,7 +123,7 @@ router.delete(
  */
 router.post(
   '/client/:clientId/id-document',
-  restrictTo('admin', 'super_admin', 'agent'),
+  restrictTo('admin', 'admin', 'employee'),
   validate(clientIdParamSchema, 'params'),
   clientDocumentUpload,
   uploadController.uploadClientIdDocument,
@@ -155,7 +155,7 @@ router.post(
  */
 router.post(
   '/client/:clientId/driver-license',
-  restrictTo('admin', 'super_admin', 'agent'),
+  restrictTo('admin', 'admin', 'employee'),
   validate(clientIdParamSchema, 'params'),
   clientDocumentUpload,
   uploadController.uploadClientDriverLicense,
@@ -218,10 +218,11 @@ router.post(
  */
 router.post(
   '/maintenance/:logId/receipt',
-  restrictTo('admin', 'super_admin', 'agent'),
+  restrictTo('admin', 'admin', 'employee'),
   validate(maintenanceLogIdParamSchema, 'params'),
   receiptUpload,
   uploadController.uploadMaintenanceReceipt,
 );
 
 export default router;
+

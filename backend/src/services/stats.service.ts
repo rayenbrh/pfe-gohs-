@@ -1,8 +1,8 @@
-import Client from '../models/Client';
-import Invoice from '../models/Invoice';
-import MaintenanceLog from '../models/MaintenanceLog';
-import Reservation from '../models/Reservation';
-import Vehicle from '../models/Vehicle';
+import { getClientModel } from '../models/Client';
+import { getInvoiceModel } from '../models/Invoice';
+import { getMaintenanceLogModel } from '../models/MaintenanceLog';
+import { getReservationModel } from '../models/Reservation';
+import { getVehicleModel } from '../models/Vehicle';
 
 function getMonthBounds(year: number, month: number) {
   const start = new Date(year, month - 1, 1);
@@ -39,9 +39,17 @@ function fillMonthlyRevenue(
 }
 
 export async function getDashboardStats() {
+  const Vehicle = getVehicleModel();
+  const Reservation = getReservationModel();
+  const Client = getClientModel();
+  const Invoice = getInvoiceModel();
+
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+  const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
 
   const [
     totalVehicles,
@@ -49,38 +57,53 @@ export async function getDashboardStats() {
     activeReservations,
     totalClients,
     monthRevenue,
+    prevMonthRevenue,
     monthReservations,
+    prevMonthReservations,
     pendingPayments,
   ] = await Promise.all([
     Vehicle.countDocuments({ isActive: { $ne: false } }),
     Vehicle.countDocuments({ isAvailable: true, isActive: { $ne: false } }),
     Reservation.countDocuments({ status: { $in: ['confirmed', 'active'] } }),
-    Client.countDocuments({ isActive: { $ne: false } }),
+    Client.countDocuments({ role: 'client', isActive: { $ne: false } }),
     Invoice.aggregate([
-      {
-        $match: {
-          status: 'paid',
-          paidAt: { $gte: startOfMonth, $lte: endOfMonth },
-        },
-      },
+      { $match: { status: 'paid', paidAt: { $gte: startOfMonth, $lte: endOfMonth } } },
+      { $group: { _id: null, total: { $sum: '$totalAmount' } } },
+    ]),
+    Invoice.aggregate([
+      { $match: { status: 'paid', paidAt: { $gte: prevMonthStart, $lte: prevMonthEnd } } },
       { $group: { _id: null, total: { $sum: '$totalAmount' } } },
     ]),
     Reservation.countDocuments({ createdAt: { $gte: startOfMonth } }),
+    Reservation.countDocuments({ createdAt: { $gte: prevMonthStart, $lte: prevMonthEnd } }),
     Invoice.countDocuments({ status: { $in: ['draft', 'sent'] } }),
   ]);
 
   const revenueTotal = monthRevenue[0]?.total ?? 0;
+  const prevRevenueTotal = prevMonthRevenue[0]?.total ?? 0;
+
+  function trend(current: number, prev: number) {
+    if (prev === 0) return current > 0 ? 100 : 0;
+    return Math.round(((current - prev) / prev) * 100);
+  }
 
   return {
+    totalVehicles,
+    availableVehicles,
+    activeReservations,
+    totalClients,
+    monthlyRevenue: revenueTotal,
+    pendingPayments,
+    revenueTrend: trend(revenueTotal, prevRevenueTotal),
+    reservationsTrend: trend(monthReservations, prevMonthReservations),
+    vehiclesTrend: 0,
+    clientsTrend: 0,
     vehicles: {
       total: totalVehicles,
       available: availableVehicles,
       unavailable: totalVehicles - availableVehicles,
     },
-    reservations: {
-      active: activeReservations,
-      thisMonth: monthReservations,
-    },
+    reservations: { active: activeReservations, thisMonth: monthReservations },
     clients: { total: totalClients },
     revenue: { thisMonth: revenueTotal },
     payments: { pending: pendingPayments },
@@ -88,6 +111,7 @@ export async function getDashboardStats() {
 }
 
 export async function getRevenueChart(period?: string) {
+  const Invoice = getInvoiceModel();
   const months = parsePeriodMonths(period);
   const startDate = new Date();
   startDate.setMonth(startDate.getMonth() - (months - 1));
@@ -95,12 +119,7 @@ export async function getRevenueChart(period?: string) {
   startDate.setHours(0, 0, 0, 0);
 
   const rows = await Invoice.aggregate([
-    {
-      $match: {
-        status: 'paid',
-        paidAt: { $gte: startDate },
-      },
-    },
+    { $match: { status: 'paid', paidAt: { $gte: startDate } } },
     {
       $group: {
         _id: { year: { $year: '$paidAt' }, month: { $month: '$paidAt' } },
@@ -114,36 +133,28 @@ export async function getRevenueChart(period?: string) {
 }
 
 export async function getReservationsChart() {
+  const Reservation = getReservationModel();
   const rows = await Reservation.aggregate([
     { $group: { _id: '$status', count: { $sum: 1 } } },
   ]);
 
-  const counts = {
-    pending: 0,
-    confirmed: 0,
-    active: 0,
-    completed: 0,
-    cancelled: 0,
-  };
-
+  const counts = { pending: 0, confirmed: 0, active: 0, completed: 0, cancelled: 0 };
   for (const row of rows) {
     const status = row._id as keyof typeof counts;
     if (status in counts) counts[status] = row.count;
   }
-
   return counts;
 }
 
 export async function getVehiclesByCategoryChart() {
+  const Vehicle = getVehicleModel();
   const rows = await Vehicle.aggregate([
     { $match: { isActive: { $ne: false } } },
     {
       $group: {
         _id: '$category',
         total: { $sum: 1 },
-        available: {
-          $sum: { $cond: [{ $eq: ['$isAvailable', true] }, 1, 0] },
-        },
+        available: { $sum: { $cond: [{ $eq: ['$isAvailable', true] }, 1, 0] } },
       },
     },
     { $sort: { _id: 1 } },
@@ -157,6 +168,12 @@ export async function getVehiclesByCategoryChart() {
 }
 
 export async function getMonthlyReport(month: string) {
+  const Vehicle = getVehicleModel();
+  const Reservation = getReservationModel();
+  const Client = getClientModel();
+  const Invoice = getInvoiceModel();
+  const MaintenanceLog = getMaintenanceLogModel();
+
   const [year, monthNum] = month.split('-').map(Number);
   const { start, end } = getMonthBounds(year, monthNum);
 
@@ -178,12 +195,7 @@ export async function getMonthlyReport(month: string) {
       { $group: { _id: '$status', count: { $sum: 1 } } },
     ]),
     Invoice.aggregate([
-      {
-        $match: {
-          status: 'paid',
-          paidAt: { $gte: start, $lte: end },
-        },
-      },
+      { $match: { status: 'paid', paidAt: { $gte: start, $lte: end } } },
       { $group: { _id: null, total: { $sum: '$totalAmount' } } },
     ]),
     Reservation.aggregate([
@@ -191,14 +203,7 @@ export async function getMonthlyReport(month: string) {
       { $group: { _id: '$vehicle', count: { $sum: 1 } } },
       { $sort: { count: -1 } },
       { $limit: 3 },
-      {
-        $lookup: {
-          from: 'vehicles',
-          localField: '_id',
-          foreignField: '_id',
-          as: 'vehicle',
-        },
-      },
+      { $lookup: { from: 'vehicles', localField: '_id', foreignField: '_id', as: 'vehicle' } },
       { $unwind: '$vehicle' },
       {
         $project: {
@@ -210,7 +215,7 @@ export async function getMonthlyReport(month: string) {
         },
       },
     ]),
-    Client.countDocuments({ createdAt: { $gte: start, $lte: end } }),
+    Client.countDocuments({ role: 'client', createdAt: { $gte: start, $lte: end } }),
     MaintenanceLog.find({ performedAt: { $gte: start, $lte: end } })
       .populate('vehicle', 'brand model licensePlate')
       .sort('-performedAt'),
@@ -245,6 +250,9 @@ export async function getMonthlyReport(month: string) {
 }
 
 export async function getFleetAvailability() {
+  const Vehicle = getVehicleModel();
+  const Reservation = getReservationModel();
+
   const vehicles = await Vehicle.find({ isActive: { $ne: false } })
     .select('brand model year category isAvailable licensePlate')
     .sort('category brand');

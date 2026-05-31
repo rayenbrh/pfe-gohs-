@@ -1,37 +1,23 @@
-import mongoose, { Schema } from 'mongoose';
+/**
+ * Clients are now Users with role === 'client' in the agency database.
+ * This module provides a tenant-aware getClientModel() that returns the User
+ * model scoped to the current tenant connection.
+ *
+ * All services that previously imported Client should use getClientModel().
+ * Queries must add { role: 'client' } to filters.
+ */
+import mongoose from 'mongoose';
 
-import type { IClientDocument, IClientModel } from '../types/models';
-import { schemaOptionsFor } from '../utils/schemaOptions';
+import { getTenantConnection } from '../config/tenantDB';
+import type { IUserDocument, IUserModel } from '../types/models';
+import { userSchema } from './User';
 
-const clientSchema = new Schema<IClientDocument>(
-  {
-    firstName: { type: String, required: true, trim: true },
-    lastName: { type: String, required: true, trim: true },
-    email: { type: String, lowercase: true, trim: true, sparse: true, index: true },
-    phone: { type: String, required: true, trim: true, index: true },
-    nationality: { type: String, required: true, trim: true },
-    idType: {
-      type: String,
-      enum: ['cin', 'passport', 'driving_license'],
-      required: true,
-    },
-    idNumber: { type: String, required: true, trim: true, index: true },
-    idDocumentUrl: { type: String },
-    driverLicenseUrl: { type: String },
-    address: { type: String, trim: true },
-    dateOfBirth: { type: Date },
-    notes: { type: String },
-    isBlacklisted: { type: Boolean, default: false, index: true },
-    isActive: { type: Boolean, default: true, index: true },
-    totalRentals: { type: Number, default: 0, min: 0 },
-  },
-  schemaOptionsFor<IClientDocument>(),
-);
+export function getClientModel(conn?: mongoose.Connection): IUserModel {
+  const c = conn ?? getTenantConnection();
+  if (c.models.User) return c.models.User as IUserModel;
+  return c.model<IUserDocument, IUserModel>('User', userSchema);
+}
 
-clientSchema.virtual('fullName').get(function (this: IClientDocument) {
-  return `${this.firstName} ${this.lastName}`;
-});
-
-const Client = mongoose.model<IClientDocument, IClientModel>('Client', clientSchema);
-
+// Legacy default export — kept for backward compat, points to default connection
+const Client = mongoose.model<IUserDocument, IUserModel>('ClientLegacy', userSchema);
 export default Client;

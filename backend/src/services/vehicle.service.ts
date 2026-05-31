@@ -1,8 +1,8 @@
 import type { FilterQuery, Types } from 'mongoose';
 
-import MaintenanceLog from '../models/MaintenanceLog';
-import Reservation from '../models/Reservation';
-import Vehicle from '../models/Vehicle';
+import { getMaintenanceLogModel } from '../models/MaintenanceLog';
+import { getReservationModel } from '../models/Reservation';
+import { getVehicleModel } from '../models/Vehicle';
 import type { IVehicleDocument } from '../types/models';
 import { APIFeatures } from '../utils/apiFeatures';
 import { AppError } from '../utils/AppError';
@@ -60,6 +60,7 @@ function buildListFilter(query: Record<string, string | undefined>): FilterQuery
 }
 
 export async function listVehicles(query: Record<string, string | undefined>) {
+  const Vehicle = getVehicleModel();
   const filter = buildListFilter(query);
   const features = new APIFeatures(Vehicle.find(filter), query).sort().limitFields().paginate();
 
@@ -74,6 +75,7 @@ export async function listVehicles(query: Record<string, string | undefined>) {
 }
 
 export async function getVehicleById(id: string) {
+  const Vehicle = getVehicleModel();
   const vehicle = await Vehicle.findOne({ _id: id, isActive: { $ne: false } }).populate(
     'addedBy',
     'name',
@@ -92,6 +94,9 @@ export async function getAvailableVehicles(
   if (startDate >= endDate) {
     throw new AppError('startDate must be before endDate', 400, 'INVALID_DATE_RANGE');
   }
+
+  const Vehicle = getVehicleModel();
+  const Reservation = getReservationModel();
 
   const overlapping = await Reservation.find({
     status: { $in: ['pending', 'confirmed', 'active'] },
@@ -137,6 +142,7 @@ export async function checkVehicleConflict(
   endDate: Date,
   excludeReservationId?: Types.ObjectId | string,
 ): Promise<boolean> {
+  const Reservation = getReservationModel();
   const available = await Reservation.checkAvailability(
     vehicleId,
     startDate,
@@ -150,6 +156,7 @@ export async function assertUniqueLicensePlate(
   licensePlate: string,
   excludeVehicleId?: string,
 ): Promise<void> {
+  const Vehicle = getVehicleModel();
   const filter: FilterQuery<IVehicleDocument> = {
     licensePlate: licensePlate.toUpperCase(),
     isActive: { $ne: false },
@@ -167,6 +174,7 @@ export async function assertUniqueLicensePlate(
 export async function createVehicle(
   data: Partial<IVehicleDocument> & { addedBy?: Types.ObjectId | string },
 ) {
+  const Vehicle = getVehicleModel();
   return Vehicle.create({
     ...data,
     images: data.images ?? [],
@@ -175,6 +183,7 @@ export async function createVehicle(
 }
 
 export async function updateVehicle(id: string, data: Partial<IVehicleDocument>) {
+  const Vehicle = getVehicleModel();
   const vehicle = await Vehicle.findOneAndUpdate(
     { _id: id, isActive: { $ne: false } },
     data,
@@ -187,6 +196,9 @@ export async function updateVehicle(id: string, data: Partial<IVehicleDocument>)
 }
 
 export async function softDeleteVehicle(id: string) {
+  const Vehicle = getVehicleModel();
+  const Reservation = getReservationModel();
+
   const activeReservation = await Reservation.findOne({
     vehicle: id,
     status: { $in: ['pending', 'confirmed', 'active'] },
@@ -219,6 +231,9 @@ export async function updateVehicleAvailability(
   reason?: string,
   userId?: string,
 ) {
+  const Vehicle = getVehicleModel();
+  const MaintenanceLog = getMaintenanceLogModel();
+
   const vehicle = await Vehicle.findOneAndUpdate(
     { _id: id, isActive: { $ne: false } },
     { isAvailable },
@@ -248,6 +263,7 @@ export async function getVehicleReservations(
   page: number,
   limit: number,
 ) {
+  const Reservation = getReservationModel();
   const safePage = Math.max(1, page);
   const safeLimit = Math.min(100, Math.max(1, limit));
   const skip = (safePage - 1) * safeLimit;
@@ -273,6 +289,7 @@ export async function getVehicleReservations(
 }
 
 export async function getVehicleMaintenanceLogs(vehicleId: string) {
+  const MaintenanceLog = getMaintenanceLogModel();
   return MaintenanceLog.find({ vehicle: vehicleId }).sort('-performedAt');
 }
 

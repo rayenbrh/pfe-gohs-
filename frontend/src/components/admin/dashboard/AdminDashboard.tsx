@@ -21,12 +21,15 @@ import {
 } from '@/hooks/useAdminDashboard';
 import { EMPTY_ADMIN_STATS } from '@/lib/admin-api';
 import { useLocaleFormat } from '@/hooks/useLocaleFormat';
+import { useAuthStore } from '@/stores/authStore';
 import type { ReservationStatus } from '@/types/reservation';
 
 export function AdminDashboard() {
   const t = useTranslations('admin');
   const tStatus = useTranslations('admin.status');
   const { formatPrice } = useLocaleFormat();
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === 'admin';
 
   const statsQuery = useAdminStats();
   const revenueQuery = useRevenueChart();
@@ -145,7 +148,8 @@ export function AdminDashboard() {
         <QuickActionsGrid />
       </div>
 
-      {maintenanceAlerts.length > 0 ? (
+      {/* Maintenance alerts — admin only */}
+      {isAdmin && maintenanceAlerts.length > 0 ? (
         <SectionErrorBoundary sectionName="Maintenance alerts">
           <QueryPanel
             isLoading={maintenanceQuery.isLoading && maintenanceAlerts.length === 0}

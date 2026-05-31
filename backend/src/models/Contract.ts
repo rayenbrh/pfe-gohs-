@@ -1,5 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 
+import { getTenantConnection } from '../config/tenantDB';
 import type { IContractDocument, IContractModel } from '../types/models';
 import { generateSequentialId } from '../utils/generateId';
 import { schemaOptionsFor } from '../utils/schemaOptions';
@@ -30,6 +31,11 @@ contractSchema.pre('save', async function (this: IContractDocument, next) {
   next();
 });
 
-const Contract = mongoose.model<IContractDocument, IContractModel>('Contract', contractSchema);
+export function getContractModel(conn?: mongoose.Connection): IContractModel {
+  const c = conn ?? getTenantConnection();
+  if (c.models.Contract) return c.models.Contract as IContractModel;
+  return c.model<IContractDocument, IContractModel>('Contract', contractSchema);
+}
 
+const Contract = mongoose.model<IContractDocument, IContractModel>('Contract', contractSchema);
 export default Contract;

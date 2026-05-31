@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 
 import * as clientController from '../controllers/client.controller';
 import { requireRole, verifyToken } from '../middleware/auth.middleware';
@@ -33,7 +33,7 @@ router.use(verifyToken);
  *             schema:
  *               $ref: '#/components/schemas/ApiSuccess'
  */
-router.get('/', requireRole('admin', 'super_admin'), clientController.getClients);
+router.get('/', requireRole('admin', 'admin'), clientController.getClients);
 
 /**
  * @swagger
@@ -56,7 +56,7 @@ router.get('/', requireRole('admin', 'super_admin'), clientController.getClients
  */
 router.get(
   '/:id/history',
-  requireRole('admin', 'super_admin'),
+  requireRole('admin', 'admin'),
   validate(clientIdSchema, 'params'),
   clientController.getClientHistory,
 );
@@ -89,7 +89,7 @@ router.get(
  */
 router.get(
   '/:id',
-  requireRole('admin', 'super_admin'),
+  requireRole('admin', 'admin'),
   validate(clientIdSchema, 'params'),
   clientController.getClient,
 );
@@ -114,7 +114,7 @@ router.get(
  */
 router.post(
   '/',
-  requireRole('admin', 'super_admin', 'agent'),
+  requireRole('admin', 'admin', 'employee'),
   validate(createClientSchema),
   clientController.createClient,
 );
@@ -138,7 +138,7 @@ router.post(
  */
 router.patch(
   '/:id/blacklist',
-  requireRole('admin', 'super_admin'),
+  requireRole('admin', 'admin'),
   validate(clientIdSchema, 'params'),
   validate(blacklistClientSchema),
   clientController.blacklistClient,
@@ -163,7 +163,7 @@ router.patch(
  */
 router.patch(
   '/:id',
-  requireRole('admin', 'super_admin', 'agent'),
+  requireRole('admin', 'admin', 'employee'),
   validate(clientIdSchema, 'params'),
   validate(updateClientSchema),
   clientController.updateClient,
@@ -188,9 +188,10 @@ router.patch(
  */
 router.delete(
   '/:id',
-  requireRole('super_admin'),
+  requireRole('admin'),
   validate(clientIdSchema, 'params'),
   clientController.deleteClient,
 );
 
 export default router;
+

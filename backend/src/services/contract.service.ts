@@ -1,5 +1,5 @@
-import Contract from '../models/Contract';
-import Reservation from '../models/Reservation';
+import { getContractModel } from '../models/Contract';
+import { getReservationModel } from '../models/Reservation';
 import { generateContractPDF } from './pdf.service';
 import { AppError } from '../utils/AppError';
 import { generateSequentialId } from '../utils/generateId';
@@ -7,6 +7,9 @@ import { uploadPdfBuffer } from '../utils/pdfUpload';
 import { APIFeatures } from '../utils/apiFeatures';
 
 export async function generateContractForReservation(reservationId: string) {
+  const Contract = getContractModel();
+  const Reservation = getReservationModel();
+
   const existing = await Contract.findOne({ reservation: reservationId });
   if (existing) return existing;
 
@@ -42,13 +45,13 @@ export async function generateContractForReservation(reservationId: string) {
 }
 
 export async function listContracts(query: Record<string, string | undefined>) {
+  const Contract = getContractModel();
   const features = new APIFeatures(
-    Contract.find()
-      .populate({
-        path: 'reservation',
-        select: 'reservationNumber status client',
-        populate: { path: 'client', select: 'firstName lastName' },
-      }),
+    Contract.find().populate({
+      path: 'reservation',
+      select: 'reservationNumber status client',
+      populate: { path: 'client', select: 'firstName lastName' },
+    }),
     query,
   )
     .sort()
@@ -70,6 +73,7 @@ export async function listContracts(query: Record<string, string | undefined>) {
 }
 
 export async function getContractById(id: string) {
+  const Contract = getContractModel();
   const contract = await Contract.findById(id).populate({
     path: 'reservation',
     populate: [{ path: 'vehicle' }, { path: 'client' }, { path: 'agent', select: 'name email' }],
@@ -79,6 +83,7 @@ export async function getContractById(id: string) {
 }
 
 export async function getContractByReservation(reservationId: string) {
+  const Contract = getContractModel();
   const contract = await Contract.findOne({ reservation: reservationId }).populate({
     path: 'reservation',
     populate: [{ path: 'vehicle' }, { path: 'client' }],

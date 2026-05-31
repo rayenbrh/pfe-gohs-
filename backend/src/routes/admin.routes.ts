@@ -17,7 +17,7 @@ const router = Router();
  */
 router.get('/health', adminController.getHealth);
 
-router.use(protect, restrictTo('admin', 'super_admin'));
+router.use(protect, restrictTo('admin', 'employee'));
 
 /**
  * @swagger

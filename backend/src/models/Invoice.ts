@@ -1,5 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 
+import { getTenantConnection } from '../config/tenantDB';
 import type { IInvoiceDocument, IInvoiceLineItem, IInvoiceModel } from '../types/models';
 import { generateSequentialId } from '../utils/generateId';
 import { schemaOptionsFor } from '../utils/schemaOptions';
@@ -66,6 +67,11 @@ invoiceSchema.pre('save', async function (this: IInvoiceDocument, next) {
   next();
 });
 
-const Invoice = mongoose.model<IInvoiceDocument, IInvoiceModel>('Invoice', invoiceSchema);
+export function getInvoiceModel(conn?: mongoose.Connection): IInvoiceModel {
+  const c = conn ?? getTenantConnection();
+  if (c.models.Invoice) return c.models.Invoice as IInvoiceModel;
+  return c.model<IInvoiceDocument, IInvoiceModel>('Invoice', invoiceSchema);
+}
 
+const Invoice = mongoose.model<IInvoiceDocument, IInvoiceModel>('Invoice', invoiceSchema);
 export default Invoice;

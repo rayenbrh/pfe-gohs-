@@ -1,5 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 
+import { getTenantConnection } from '../config/tenantDB';
 import type { IVehicleDocument, IVehicleModel } from '../types/models';
 import { schemaOptionsFor } from '../utils/schemaOptions';
 
@@ -53,6 +54,11 @@ vehicleSchema.methods.isMaintenanceDue = function (this: IVehicleDocument): bool
   return this.nextMaintenanceDate.getTime() <= sevenDaysFromNow;
 };
 
-const Vehicle = mongoose.model<IVehicleDocument, IVehicleModel>('Vehicle', vehicleSchema);
+export function getVehicleModel(conn?: mongoose.Connection): IVehicleModel {
+  const c = conn ?? getTenantConnection();
+  if (c.models.Vehicle) return c.models.Vehicle as IVehicleModel;
+  return c.model<IVehicleDocument, IVehicleModel>('Vehicle', vehicleSchema);
+}
 
+const Vehicle = mongoose.model<IVehicleDocument, IVehicleModel>('Vehicle', vehicleSchema);
 export default Vehicle;

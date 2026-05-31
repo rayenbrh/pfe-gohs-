@@ -30,7 +30,7 @@
     "email": "contact@inovaride.com",
     "email_value": "contact@inovaride.com",
     "copyright": "© 2026 Inova Ride. جميع الحقوق محفوظة.",
-    "built_with": "Built with NextFrame"
+    "built_with": "Built with Inovibe"
   },
   "hero": {
     "tagline": "استأجر المستقبل",
@@ -246,6 +246,7 @@
     "action_new_reservation": "حجز جديد",
     "action_add_client": "إضافة عميل",
     "action_generate_report": "إنشاء تقرير",
+    "action_maintenance": "الصيانة",
     "maintenance_due": "صيانة مستحقة",
     "due_soon": "قريباً",
     "recent_reservations": "الحجوزات الأخيرة",

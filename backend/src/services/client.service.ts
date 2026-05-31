@@ -1,8 +1,8 @@
 import type { FilterQuery } from 'mongoose';
 
-import Client from '../models/Client';
-import Reservation from '../models/Reservation';
-import type { IClientDocument } from '../types/models';
+import { getClientModel } from '../models/Client';
+import { getReservationModel } from '../models/Reservation';
+import type { IUserDocument } from '../types/models';
 import { APIFeatures } from '../utils/apiFeatures';
 import { AppError } from '../utils/AppError';
 
@@ -10,7 +10,9 @@ export async function assertUniqueIdNumber(
   idNumber: string,
   excludeClientId?: string,
 ): Promise<void> {
-  const filter: FilterQuery<IClientDocument> = {
+  const Client = getClientModel();
+  const filter: FilterQuery<IUserDocument> = {
+    role: 'client',
     idNumber: idNumber.trim(),
     isActive: { $ne: false },
   };
@@ -24,8 +26,8 @@ export async function assertUniqueIdNumber(
 
 async function buildClientFilter(
   query: Record<string, string | undefined>,
-): Promise<FilterQuery<IClientDocument>> {
-  const filter: FilterQuery<IClientDocument> = { isActive: { $ne: false } };
+): Promise<FilterQuery<IUserDocument>> {
+  const filter: FilterQuery<IUserDocument> = { role: 'client', isActive: { $ne: false } };
 
   if (query.nationality) filter.nationality = query.nationality;
   if (query.isBlacklisted !== undefined) {
@@ -46,9 +48,10 @@ async function buildClientFilter(
   return filter;
 }
 
-async function attachLatestReservations(clients: IClientDocument[]) {
+async function attachLatestReservations(clients: IUserDocument[]) {
   if (!clients.length) return clients;
 
+  const Reservation = getReservationModel();
   const clientIds = clients.map((c) => c._id);
   const latest = await Reservation.aggregate([
     { $match: { client: { $in: clientIds } } },
@@ -70,6 +73,7 @@ async function attachLatestReservations(clients: IClientDocument[]) {
 }
 
 export async function listClients(query: Record<string, string | undefined>) {
+  const Client = getClientModel();
   const filter = await buildClientFilter(query);
   const features = new APIFeatures(Client.find(filter), query).sort().limitFields().paginate();
 
@@ -89,7 +93,9 @@ export async function listClients(query: Record<string, string | undefined>) {
 }
 
 export async function getClientById(id: string) {
-  const client = await Client.findOne({ _id: id, isActive: { $ne: false } });
+  const Client = getClientModel();
+  const Reservation = getReservationModel();
+  const client = await Client.findOne({ _id: id, role: 'client', isActive: { $ne: false } });
   if (!client) throw new AppError('Client not found', 404, 'CLIENT_NOT_FOUND');
 
   const [recentReservations, spendAgg] = await Promise.all([
@@ -108,13 +114,15 @@ export async function getClientById(id: string) {
   return { client, recentReservations, totalSpent };
 }
 
-export async function createClient(data: Partial<IClientDocument>) {
-  return Client.create(data);
+export async function createClient(data: Partial<IUserDocument>) {
+  const Client = getClientModel();
+  return Client.create({ ...data, role: 'client' });
 }
 
-export async function updateClient(id: string, data: Partial<IClientDocument>) {
+export async function updateClient(id: string, data: Partial<IUserDocument>) {
+  const Client = getClientModel();
   const client = await Client.findOneAndUpdate(
-    { _id: id, isActive: { $ne: false } },
+    { _id: id, role: 'client', isActive: { $ne: false } },
     data,
     { new: true, runValidators: true },
   );
@@ -127,7 +135,8 @@ export async function toggleBlacklist(
   isBlacklisted: boolean,
   reason?: string,
 ) {
-  const client = await Client.findOne({ _id: id, isActive: { $ne: false } });
+  const Client = getClientModel();
+  const client = await Client.findOne({ _id: id, role: 'client', isActive: { $ne: false } });
   if (!client) throw new AppError('Client not found', 404, 'CLIENT_NOT_FOUND');
 
   client.isBlacklisted = isBlacklisted;
@@ -146,6 +155,7 @@ export async function getClientHistory(
   page: number,
   limit: number,
 ) {
+  const Reservation = getReservationModel();
   const safePage = Math.max(1, page);
   const safeLimit = Math.min(100, Math.max(1, limit));
   const skip = (safePage - 1) * safeLimit;
@@ -154,7 +164,6 @@ export async function getClientHistory(
   const [reservations, total] = await Promise.all([
     Reservation.find(filter)
       .populate('vehicle', 'brand model licensePlate category')
-      .populate('agent', 'name')
       .sort('-createdAt')
       .skip(skip)
       .limit(safeLimit),
@@ -171,6 +180,9 @@ export async function getClientHistory(
 }
 
 export async function softDeleteClient(id: string) {
+  const Client = getClientModel();
+  const Reservation = getReservationModel();
+
   const activeReservation = await Reservation.findOne({
     client: id,
     status: { $in: ['pending', 'confirmed', 'active'] },

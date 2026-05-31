@@ -24,16 +24,16 @@ import { cn } from '@/lib/utils';
 
 import { Logo } from './Logo';
 
-const mainNavItems = [
-  { href: '/admin/dashboard', icon: LayoutDashboard, key: 'dashboard' },
-  { href: '/admin/fleet', icon: Car, key: 'fleet' },
-  { href: '/admin/reservations', icon: CalendarDays, key: 'reservations' },
-  { href: '/admin/clients', icon: Users, key: 'clients' },
-  { href: '/admin/contracts', icon: FileText, key: 'contracts' },
-  { href: '/admin/invoices', icon: Receipt, key: 'invoices' },
-  { href: '/admin/maintenance', icon: Wrench, key: 'maintenance' },
-  { href: '/admin/hr', icon: UserCog, key: 'hr' },
-] as const;
+const allNavItems = [
+  { href: '/admin/dashboard',    icon: LayoutDashboard, key: 'dashboard',    adminOnly: false },
+  { href: '/admin/fleet',        icon: Car,             key: 'fleet',        adminOnly: true  },
+  { href: '/admin/reservations', icon: CalendarDays,    key: 'reservations', adminOnly: false },
+  { href: '/admin/clients',      icon: Users,           key: 'clients',      adminOnly: false },
+  { href: '/admin/contracts',    icon: FileText,        key: 'contracts',    adminOnly: false },
+  { href: '/admin/invoices',     icon: Receipt,         key: 'invoices',     adminOnly: false },
+  { href: '/admin/maintenance',  icon: Wrench,          key: 'maintenance',  adminOnly: true  },
+  { href: '/admin/hr',           icon: UserCog,         key: 'hr',           adminOnly: true  },
+];
 
 interface AdminSidebarProps {
   variant?: 'desktop' | 'drawer';
@@ -47,9 +47,11 @@ export function AdminSidebar({ variant = 'desktop', onClose }: AdminSidebarProps
 
   const tCommon = useTranslations('common');
   const tLayout = useTranslations('layout');
+  const isAdmin = user?.role === 'admin';
   const displayName = user?.name ?? tCommon('admin_user');
-  const roleLabel =
-    user?.role === 'admin' ? tCommon('role_admin') : tCommon('role_staff');
+  const roleLabel = isAdmin ? tCommon('role_admin') : tCommon('role_staff');
+
+  const mainNavItems = allNavItems.filter(item => !item.adminOnly || isAdmin);
 
   const navContent = (
     <>

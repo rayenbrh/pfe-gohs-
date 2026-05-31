@@ -1,6 +1,6 @@
 import logger from '../config/logger';
-import Invoice from '../models/Invoice';
-import Reservation from '../models/Reservation';
+import { getInvoiceModel } from '../models/Invoice';
+import { getReservationModel } from '../models/Reservation';
 import { APIFeatures } from '../utils/apiFeatures';
 import { AppError } from '../utils/AppError';
 import {
@@ -148,6 +148,7 @@ export async function initKonnectPayment(
 
   const payUrl = data.payUrl.replace(/PAYMENT_REF/g, data.paymentRef);
 
+  const Reservation = getReservationModel();
   await Reservation.findByIdAndUpdate(reservation._id, {
     konnectPaymentRef: data.paymentRef,
     paymentMethod: 'online',
@@ -185,6 +186,9 @@ export async function verifyKonnectPayment(paymentRef: string): Promise<KonnectP
 }
 
 export async function processKonnectWebhook(paymentRef: string): Promise<void> {
+  const Reservation = getReservationModel();
+  const Invoice = getInvoiceModel();
+
   const konnectStatus = await verifyKonnectPayment(paymentRef);
 
   const reservation = await Reservation.findOne({ konnectPaymentRef: paymentRef })
@@ -268,6 +272,7 @@ export async function processKonnectWebhook(paymentRef: string): Promise<void> {
 }
 
 export async function listPaymentHistory(query: Record<string, string | undefined>) {
+  const Reservation = getReservationModel();
   const filter: Record<string, unknown> = {
     konnectPaymentRef: { $exists: true, $ne: null },
   };

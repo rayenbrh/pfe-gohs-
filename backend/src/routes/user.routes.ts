@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 
 import * as userController from '../controllers/user.controller';
 import { requireRole, verifyToken } from '../middleware/auth.middleware';
@@ -7,7 +7,7 @@ import { updateUserSchema, userIdSchema } from '../validators/user.validator';
 
 const router = Router();
 
-router.use(verifyToken, requireRole('admin', 'super_admin'));
+router.use(verifyToken, requireRole('admin', 'admin'));
 
 /**
  * @swagger
@@ -64,7 +64,7 @@ router.get('/:id', validate(userIdSchema, 'params'), userController.getUser);
  */
 router.patch(
   '/:id',
-  requireRole('super_admin'),
+  requireRole('admin'),
   validate(userIdSchema, 'params'),
   validate(updateUserSchema),
   userController.updateUser,
@@ -89,9 +89,10 @@ router.patch(
  */
 router.delete(
   '/:id',
-  requireRole('super_admin'),
+  requireRole('admin'),
   validate(userIdSchema, 'params'),
   userController.deleteUser,
 );
 
 export default router;
+

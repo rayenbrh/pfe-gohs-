@@ -2,7 +2,11 @@ import type { Document, Model, Types } from 'mongoose';
 
 // ─── Enums ───────────────────────────────────────────────────────────────────
 
-export type UserRole = 'super_admin' | 'admin' | 'agent';
+/** Roles that live in agency databases */
+export type AgencyUserRole = 'admin' | 'employee' | 'client';
+
+/** All possible roles across the system */
+export type UserRole = AgencyUserRole;
 
 export type VehicleCategory = 'economy' | 'luxury' | 'utility' | 'suv' | 'van';
 export type FuelType = 'diesel' | 'petrol' | 'electric' | 'hybrid';
@@ -35,13 +39,29 @@ export type SequentialIdPrefix = 'RES' | 'CTR' | 'INV';
 
 export interface IUser {
   _id: string;
-  name: string;
+  /** Display name for admin/employee. For clients use firstName + lastName. */
+  name?: string;
   email: string;
   password: string;
   role: UserRole;
   isActive: boolean;
   lastLogin?: Date;
   avatar?: string;
+  // Client-specific fields
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  nationality?: string;
+  idType?: ClientIdType;
+  idNumber?: string;
+  idDocumentUrl?: string;
+  driverLicenseUrl?: string;
+  address?: string;
+  dateOfBirth?: Date;
+  notes?: string;
+  isBlacklisted?: boolean;
+  totalRentals?: number;
+  fullName?: string;
   createdAt: Date;
   updatedAt: Date;
 }

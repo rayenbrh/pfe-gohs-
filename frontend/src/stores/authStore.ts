@@ -1,59 +1,64 @@
 import { create } from 'zustand';
 
 import { clearToken, getToken, setToken } from '@/lib/auth';
-import { getLocaleFromPathname } from '@/lib/locale-path';
 import { normalizeUser, type User } from '@/types/user';
+
+interface AgencyInfo {
+  name: string;
+  slug: string;
+  logo?: string;
+}
 
 interface AuthState {
   user: User | null;
   token: string | null;
+  agency: AgencyInfo | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (token: string, user: User) => void;
+  login: (token: string, user: User, agency?: AgencyInfo) => void;
   logout: () => void;
-  initFromStorage: () => Promise<void>;
+  initFromStorage: (agencySlug?: string) => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+function getAgencySlugFromPath(): string | null {
+  if (typeof window === 'undefined') return null;
+  const m = window.location.pathname.match(/\/agency\/([^/]+)/);
+  return m?.[1] ?? null;
+}
+
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   token: null,
+  agency: null,
   isAuthenticated: false,
   isLoading: true,
 
-  login: (token, user) => {
+  login: (token, user, agency) => {
     setToken(token);
-    set({
-      token,
-      user,
-      isAuthenticated: true,
-      isLoading: false,
-    });
+    set({ token, user, agency: agency ?? null, isAuthenticated: true, isLoading: false });
   },
 
   logout: () => {
     clearToken();
-    set({
-      user: null,
-      token: null,
-      isAuthenticated: false,
-      isLoading: false,
-    });
+    if (typeof localStorage !== 'undefined') localStorage.removeItem('agency_slug');
+    set({ user: null, token: null, agency: null, isAuthenticated: false, isLoading: false });
 
     if (typeof window !== 'undefined') {
-      const locale = getLocaleFromPathname(window.location.pathname);
-      window.location.href = `/${locale}/auth/login`;
+      const slug = getAgencySlugFromPath();
+      if (slug) {
+        window.location.href = `/agency/${slug}/auth/login`;
+      } else {
+        window.location.href = '/';
+      }
     }
   },
 
-  initFromStorage: async () => {
+  initFromStorage: async (agencySlug?: string) => {
+    if (get().isAuthenticated) return;
+
     const stored = getToken();
     if (!stored) {
-      set({
-        user: null,
-        token: null,
-        isAuthenticated: false,
-        isLoading: false,
-      });
+      set({ user: null, token: null, agency: null, isAuthenticated: false, isLoading: false });
       return;
     }
 
@@ -61,25 +66,29 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     try {
       const { default: apiClient, unwrapApiResponse } = await import('@/lib/api');
-      const { data: body } = await apiClient.get('/api/auth/me');
-      const payload = unwrapApiResponse<{ user?: Record<string, unknown> }>(body);
+      const slug = agencySlug ?? getAgencySlugFromPath();
+      const endpoint = slug
+        ? `/api/agency/${slug}/auth/me`
+        : '/api/auth/me';
+
+      const { data: body } = await apiClient.get(endpoint);
+      const payload = unwrapApiResponse<{
+        user?: Record<string, unknown>;
+        agency?: AgencyInfo;
+      }>(body);
       const rawUser = (payload.user ?? payload) as Record<string, unknown>;
       const user = normalizeUser(rawUser);
 
       set({
         user,
         token: stored,
+        agency: payload.agency ?? null,
         isAuthenticated: true,
         isLoading: false,
       });
     } catch {
       clearToken();
-      set({
-        user: null,
-        token: null,
-        isAuthenticated: false,
-        isLoading: false,
-      });
+      set({ user: null, token: null, agency: null, isAuthenticated: false, isLoading: false });
     }
   },
 }));

@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 
 import * as paymentController from '../controllers/payment.controller';
 import { requireRole, verifyToken } from '../middleware/auth.middleware';
@@ -42,7 +42,7 @@ router.get(
   paymentController.verifyPayment,
 );
 
-router.use(verifyToken, requireRole('admin', 'super_admin'));
+router.use(verifyToken, requireRole('admin', 'admin'));
 
 /**
  * @openapi
@@ -54,3 +54,4 @@ router.use(verifyToken, requireRole('admin', 'super_admin'));
 router.get('/history', paymentController.getPaymentHistory);
 
 export default router;
+

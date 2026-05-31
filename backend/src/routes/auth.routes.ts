@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 
 import * as authController from '../controllers/auth.controller';
 import { requireRole, verifyToken } from '../middleware/auth.middleware';
@@ -42,7 +42,7 @@ const router = Router();
 router.post(
   '/register',
   verifyToken,
-  requireRole('super_admin'),
+  requireRole('admin'),
   validate(registerSchema),
   authController.register,
 );
@@ -176,7 +176,7 @@ router.patch(
 router.get(
   '/users',
   verifyToken,
-  requireRole('super_admin', 'admin'),
+  requireRole('admin', 'admin'),
   authController.listUsers,
 );
 
@@ -200,8 +200,9 @@ router.get(
 router.patch(
   '/users/:id/deactivate',
   verifyToken,
-  requireRole('super_admin'),
+  requireRole('admin'),
   authController.deactivateUser,
 );
 
 export default router;
+

@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 
 import * as reservationController from '../controllers/reservation.controller';
 import { requireRole, verifyToken } from '../middleware/auth.middleware';
@@ -26,7 +26,7 @@ router.use(verifyToken);
  */
 router.get(
   '/',
-  requireRole('admin', 'super_admin', 'agent'),
+  requireRole('admin', 'admin', 'employee'),
   reservationController.getReservations,
 );
 
@@ -76,7 +76,7 @@ router.get(
  */
 router.post(
   '/',
-  requireRole('admin', 'super_admin', 'agent'),
+  requireRole('admin', 'admin', 'employee'),
   validate(createReservationSchema),
   reservationController.createReservation,
 );
@@ -92,7 +92,7 @@ router.post(
  */
 router.patch(
   '/:id/status',
-  requireRole('admin', 'super_admin', 'agent'),
+  requireRole('admin', 'admin', 'employee'),
   validate(reservationIdSchema, 'params'),
   validate(updateStatusSchema),
   reservationController.updateStatus,
@@ -109,7 +109,7 @@ router.patch(
  */
 router.patch(
   '/:id',
-  requireRole('admin', 'super_admin'),
+  requireRole('admin', 'admin'),
   validate(reservationIdSchema, 'params'),
   validate(updateReservationFieldsSchema),
   reservationController.updateReservation,
@@ -126,9 +126,10 @@ router.patch(
  */
 router.delete(
   '/:id',
-  requireRole('super_admin'),
+  requireRole('admin'),
   validate(reservationIdSchema, 'params'),
   reservationController.deleteReservation,
 );
 
 export default router;
+

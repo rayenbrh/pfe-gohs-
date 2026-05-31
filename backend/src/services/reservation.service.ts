@@ -1,10 +1,10 @@
 import type { FilterQuery, Types } from 'mongoose';
 
-import Client from '../models/Client';
-import Contract from '../models/Contract';
-import Invoice from '../models/Invoice';
-import Reservation from '../models/Reservation';
-import Vehicle from '../models/Vehicle';
+import { getClientModel } from '../models/Client';
+import { getContractModel } from '../models/Contract';
+import { getInvoiceModel } from '../models/Invoice';
+import { getReservationModel } from '../models/Reservation';
+import { getVehicleModel } from '../models/Vehicle';
 import { EmailService } from './email.service';
 import {
   createCompletionInvoiceIfMissing,
@@ -59,8 +59,10 @@ async function buildListFilter(
   }
 
   if (query.search?.trim()) {
+    const Client = getClientModel();
     const search = query.search.trim();
     const matchingClients = await Client.find({
+      role: 'client',
       $or: [
         { firstName: { $regex: search, $options: 'i' } },
         { lastName: { $regex: search, $options: 'i' } },
@@ -77,6 +79,7 @@ async function buildListFilter(
 }
 
 export async function listReservations(query: Record<string, string | undefined>) {
+  const Reservation = getReservationModel();
   const filter = await buildListFilter(query);
   const features = new APIFeatures(
     Reservation.find(filter)
@@ -99,6 +102,10 @@ export async function listReservations(query: Record<string, string | undefined>
 }
 
 export async function getReservationById(id: string) {
+  const Reservation = getReservationModel();
+  const Contract = getContractModel();
+  const Invoice = getInvoiceModel();
+
   const reservation = await Reservation.findById(id)
     .populate('vehicle')
     .populate('client')
@@ -117,6 +124,10 @@ export async function getReservationById(id: string) {
 }
 
 export async function createReservation(data: CreateReservationData, agentId: string) {
+  const Vehicle = getVehicleModel();
+  const Client = getClientModel();
+  const Reservation = getReservationModel();
+
   const startDate = new Date(data.startDate);
   const endDate = new Date(data.endDate);
 
@@ -184,6 +195,10 @@ export async function completeReservation(
   actualReturnDate?: Date,
   extraCharges = 0,
 ) {
+  const Reservation = getReservationModel();
+  const Client = getClientModel();
+  const Vehicle = getVehicleModel();
+
   const reservation = await Reservation.findById(reservationId)
     .populate<{ vehicle: { brand: string; model: string; _id: unknown } }>('vehicle', 'brand model')
     .populate<{ client: { firstName: string; lastName: string; email?: string; _id: unknown } }>(
@@ -239,6 +254,10 @@ export async function cancelReservation(
   reason: string | undefined,
   cancelledBy: string,
 ) {
+  const Reservation = getReservationModel();
+  const Client = getClientModel();
+  const Vehicle = getVehicleModel();
+
   const reservation = await Reservation.findById(reservationId).populate(
     'client',
     'firstName lastName email',
@@ -268,11 +287,7 @@ export async function cancelReservation(
   await Vehicle.findByIdAndUpdate(reservation.vehicle, { isAvailable: true });
 
   const clientDoc = reservation.populated('client')
-    ? (reservation.client as unknown as {
-        firstName: string;
-        lastName: string;
-        email?: string;
-      })
+    ? (reservation.client as unknown as { firstName: string; lastName: string; email?: string })
     : await Client.findById(reservation.client).select('firstName lastName email');
 
   if (clientDoc?.email) {
@@ -295,6 +310,7 @@ export async function updateReservationFields(
     depositAmount?: number;
   },
 ) {
+  const Reservation = getReservationModel();
   const reservation = await Reservation.findByIdAndUpdate(id, data, {
     new: true,
     runValidators: true,
@@ -310,6 +326,7 @@ export async function updateReservationFields(
 }
 
 export async function getCalendarReservations(month: string) {
+  const Reservation = getReservationModel();
   const [year, monthNum] = month.split('-').map(Number);
   const startOfMonth = new Date(year, monthNum - 1, 1);
   const endOfMonth = new Date(year, monthNum, 0, 23, 59, 59, 999);
@@ -340,16 +357,13 @@ export async function getCalendarReservations(month: string) {
 }
 
 export async function hardDeleteReservation(id: string) {
+  const Reservation = getReservationModel();
   const reservation = await Reservation.findById(id);
   if (!reservation) {
     throw new AppError('Reservation not found', 404, 'RESERVATION_NOT_FOUND');
   }
   if (reservation.status !== 'cancelled') {
-    throw new AppError(
-      'Only cancelled reservations can be deleted',
-      400,
-      'INVALID_STATUS',
-    );
+    throw new AppError('Only cancelled reservations can be deleted', 400, 'INVALID_STATUS');
   }
 
   await Reservation.findByIdAndDelete(id);
@@ -357,6 +371,7 @@ export async function hardDeleteReservation(id: string) {
 }
 
 export async function transitionToConfirmed(id: string) {
+  const Reservation = getReservationModel();
   const reservation = await Reservation.findById(id);
   if (!reservation) throw new AppError('Reservation not found', 404, 'RESERVATION_NOT_FOUND');
   if (reservation.status !== 'pending') {
@@ -368,6 +383,8 @@ export async function transitionToConfirmed(id: string) {
 }
 
 export async function transitionToActive(id: string) {
+  const Reservation = getReservationModel();
+  const Vehicle = getVehicleModel();
   const reservation = await Reservation.findById(id);
   if (!reservation) throw new AppError('Reservation not found', 404, 'RESERVATION_NOT_FOUND');
   if (reservation.status !== 'confirmed') {

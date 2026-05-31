@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 
 import * as contractController from '../controllers/contract.controller';
 import { requireRole, verifyToken } from '../middleware/auth.middleware';
@@ -28,7 +28,7 @@ router.use(verifyToken);
  */
 router.post(
   '/generate/:reservationId',
-  requireRole('admin', 'super_admin', 'agent'),
+  requireRole('admin', 'admin', 'employee'),
   validate(reservationIdParamSchema, 'params'),
   contractController.generateContract,
 );
@@ -52,7 +52,7 @@ router.post(
  */
 router.get(
   '/reservation/:reservationId',
-  requireRole('admin', 'super_admin', 'agent'),
+  requireRole('admin', 'admin', 'employee'),
   validate(reservationIdParamSchema, 'params'),
   contractController.getContractByReservation,
 );
@@ -72,7 +72,7 @@ router.get(
  *       200:
  *         description: Paginated contracts
  */
-router.get('/', requireRole('admin', 'super_admin'), contractController.getContracts);
+router.get('/', requireRole('admin', 'admin'), contractController.getContracts);
 
 /**
  * @swagger
@@ -93,9 +93,10 @@ router.get('/', requireRole('admin', 'super_admin'), contractController.getContr
  */
 router.get(
   '/:id',
-  requireRole('admin', 'super_admin'),
+  requireRole('admin', 'admin'),
   validate(contractIdSchema, 'params'),
   contractController.getContract,
 );
 
 export default router;
+

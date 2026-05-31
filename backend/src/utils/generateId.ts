@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import Counter from '../models/Counter';
+import { getCounterModel } from '../models/Counter';
 import type { SequentialIdPrefix } from '../types/models';
 
 /**
@@ -11,6 +11,7 @@ export async function generateSequentialId(prefix: SequentialIdPrefix): Promise<
   const year = new Date().getFullYear();
   const counterId = `${prefix}-${year}`;
 
+  const Counter = getCounterModel();
   const counter = await Counter.findByIdAndUpdate(
     counterId,
     { $inc: { seq: 1 } },

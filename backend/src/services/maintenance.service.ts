@@ -1,7 +1,7 @@
 import type { FilterQuery } from 'mongoose';
 
-import MaintenanceLog from '../models/MaintenanceLog';
-import Vehicle from '../models/Vehicle';
+import { getMaintenanceLogModel } from '../models/MaintenanceLog';
+import { getVehicleModel } from '../models/Vehicle';
 import type { IMaintenanceLogDocument } from '../types/models';
 import { APIFeatures } from '../utils/apiFeatures';
 import { AppError } from '../utils/AppError';
@@ -9,6 +9,7 @@ import { AppError } from '../utils/AppError';
 export async function syncVehicleFromMaintenanceLog(
   log: Pick<IMaintenanceLogDocument, 'vehicle' | 'nextScheduledDate' | 'mileageAtService'>,
 ): Promise<void> {
+  const Vehicle = getVehicleModel();
   const update: Record<string, unknown> = {};
   if (log.nextScheduledDate) update.nextMaintenanceDate = log.nextScheduledDate;
   if (log.mileageAtService != null) update.mileage = log.mileageAtService;
@@ -17,6 +18,9 @@ export async function syncVehicleFromMaintenanceLog(
 }
 
 export async function listMaintenanceLogs(query: Record<string, string | undefined>) {
+  const Vehicle = getVehicleModel();
+  const MaintenanceLog = getMaintenanceLogModel();
+
   if (query.upcoming === 'true') {
     const withinDays = 30;
     const deadline = new Date(Date.now() + withinDays * 24 * 60 * 60 * 1000);
@@ -73,6 +77,7 @@ export async function listMaintenanceLogs(query: Record<string, string | undefin
 }
 
 export async function getMaintenanceLogById(id: string) {
+  const MaintenanceLog = getMaintenanceLogModel();
   const log = await MaintenanceLog.findById(id).populate('vehicle');
   if (!log) throw new AppError('Maintenance log not found', 404, 'MAINTENANCE_NOT_FOUND');
   return log;
@@ -91,6 +96,9 @@ export async function createMaintenanceLog(data: {
   nextScheduledMileage?: number;
   notes?: string;
 }) {
+  const Vehicle = getVehicleModel();
+  const MaintenanceLog = getMaintenanceLogModel();
+
   const vehicle = await Vehicle.findOne({ _id: data.vehicleId, isActive: { $ne: false } });
   if (!vehicle) throw new AppError('Vehicle not found', 404, 'VEHICLE_NOT_FOUND');
 
@@ -128,6 +136,9 @@ export async function updateMaintenanceLog(
     notes: string;
   }>,
 ) {
+  const Vehicle = getVehicleModel();
+  const MaintenanceLog = getMaintenanceLogModel();
+
   if (data.vehicleId) {
     const vehicle = await Vehicle.findOne({ _id: data.vehicleId, isActive: { $ne: false } });
     if (!vehicle) throw new AppError('Vehicle not found', 404, 'VEHICLE_NOT_FOUND');
@@ -151,17 +162,20 @@ export async function updateMaintenanceLog(
 }
 
 export async function deleteMaintenanceLog(id: string) {
+  const MaintenanceLog = getMaintenanceLogModel();
   const log = await MaintenanceLog.findByIdAndDelete(id);
   if (!log) throw new AppError('Maintenance log not found', 404, 'MAINTENANCE_NOT_FOUND');
   return log;
 }
 
 export async function getVehicleMaintenanceHistory(vehicleId: string) {
+  const Vehicle = getVehicleModel();
+  const MaintenanceLog = getMaintenanceLogModel();
+
   const vehicle = await Vehicle.findOne({ _id: vehicleId, isActive: { $ne: false } });
   if (!vehicle) throw new AppError('Vehicle not found', 404, 'VEHICLE_NOT_FOUND');
 
-  const logs = await MaintenanceLog.find({ vehicle: vehicleId })
-    .sort('-performedAt');
+  const logs = await MaintenanceLog.find({ vehicle: vehicleId }).sort('-performedAt');
 
   const totalCost = logs.reduce((sum, l) => sum + l.cost, 0);
   const lastServiceDate = logs[0]?.performedAt ?? null;
