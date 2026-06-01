@@ -7,9 +7,16 @@ import type { Vehicle } from '@/types/vehicle';
 interface VehicleGridProps {
   vehicles: Vehicle[];
   size?: 'default' | 'large';
+  fleetBasePath?: string;
+  bookingBasePath?: string;
 }
 
-export function VehicleGrid({ vehicles, size = 'default' }: VehicleGridProps) {
+export function VehicleGrid({
+  vehicles,
+  size = 'default',
+  fleetBasePath = '/fleet',
+  bookingBasePath = '/booking',
+}: VehicleGridProps) {
   return (
     <>
       <div className="hidden sm:block">
@@ -21,11 +28,22 @@ export function VehicleGrid({ vehicles, size = 'default' }: VehicleGridProps) {
           }
         >
           {vehicles.map((vehicle, index) => (
-            <VehicleCard key={vehicle.id} vehicle={vehicle} index={index} size={size} />
+            <VehicleCard
+              key={vehicle.id}
+              vehicle={vehicle}
+              index={index}
+              size={size}
+              fleetBasePath={fleetBasePath}
+              bookingBasePath={bookingBasePath}
+            />
           ))}
         </div>
       </div>
-      <VehicleSwipeCarousel vehicles={vehicles} />
+      <VehicleSwipeCarousel
+        vehicles={vehicles}
+        fleetBasePath={fleetBasePath}
+        bookingBasePath={bookingBasePath}
+      />
     </>
   );
 }

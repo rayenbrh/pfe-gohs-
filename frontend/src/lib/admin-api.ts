@@ -1,4 +1,5 @@
 import api, { unwrapApiResponse } from '@/lib/api';
+import { getResolvedAgencySlug } from '@/lib/agency-context';
 import {
   mockAdminStats,
   mockFleetAvailability,
@@ -16,7 +17,6 @@ import type {
   RevenueChartPoint,
 } from '@/types/admin';
 import type { ReservationStatus } from '@/types/reservation';
-import { useAuthStore } from '@/stores/authStore';
 
 interface BackendStats {
   vehicles?: { total?: number; available?: number };
@@ -69,10 +69,8 @@ export const EMPTY_RESERVATION_STATUS_MAP: Record<ReservationStatus, number> = {
   cancelled: 0,
 };
 
-/** Returns /api/agency/<slug> prefix, or /api as fallback. */
 function agencyBase(): string {
-  const slug = useAuthStore.getState().user?.agencySlug
-    ?? useAuthStore.getState().agency?.slug;
+  const slug = getResolvedAgencySlug();
   return slug ? `/api/agency/${slug}` : '/api';
 }
 

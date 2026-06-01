@@ -25,12 +25,16 @@ interface VehicleCardProps {
   index?: number;
   size?: 'default' | 'large' | 'compact';
   readOnly?: boolean;
+  fleetBasePath?: string;
+  bookingBasePath?: string;
 }
 
 export function VehicleCard({
   vehicle,
   size = 'default',
   readOnly = false,
+  fleetBasePath = '/fleet',
+  bookingBasePath = '/booking',
 }: VehicleCardProps) {
   const t = useTranslations('fleet');
   const { formatPrice } = useLocaleFormat();
@@ -51,6 +55,9 @@ export function VehicleCard({
     { icon: Settings2, label: t(`transmission_${vehicle.transmission}`) },
     { icon: Calendar, label: String(vehicle.year) },
   ];
+
+  const detailHref = `${fleetBasePath}/${vehicle.id}`;
+  const bookingHref = `${bookingBasePath}?vehicleId=${vehicle.id}`;
 
   const card = (
     <div className="relative">
@@ -89,7 +96,7 @@ export function VehicleCard({
           }
         }}
       >
-        <Link href={`/fleet/${vehicle.id}`} className="block touch-manipulation">
+        <Link href={detailHref} className="block touch-manipulation">
           <div
             className="group relative overflow-hidden bg-bg-elevated"
             style={{ height: imageHeight, borderRadius: '10px 10px 0 0' }}
@@ -110,7 +117,7 @@ export function VehicleCard({
         </Link>
 
         <div className={size === 'compact' ? 'p-4' : 'p-5'}>
-          <Link href={`/fleet/${vehicle.id}`} className="touch-manipulation">
+          <Link href={detailHref} className="touch-manipulation">
             <h3
               className={
                 size === 'large'
@@ -149,15 +156,12 @@ export function VehicleCard({
 
           {!readOnly ? (
             <div className="mt-4 flex gap-2">
-              <Link href={`/fleet/${vehicle.id}`} className="min-w-0 flex-1 touch-manipulation">
+              <Link href={detailHref} className="min-w-0 flex-1 touch-manipulation">
                 <Button variant="ghost" className="w-full" size="sm">
                   {t('details')}
                 </Button>
               </Link>
-              <Link
-                href={`/booking?vehicleId=${vehicle.id}`}
-                className="min-w-0 flex-1 touch-manipulation"
-              >
+              <Link href={bookingHref} className="min-w-0 flex-1 touch-manipulation">
                 <Button className="w-full" size="sm" disabled={vehicle.status !== 'available'}>
                   {t('book_now')}
                 </Button>

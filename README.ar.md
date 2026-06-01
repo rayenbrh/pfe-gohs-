@@ -140,36 +140,60 @@ MONGODB_URI=mongodb+srv://المستخدم:كلمة_المرور@cluster.mongodb
 
 ## تهيئة قاعدة البيانات (Seed)
 
-يُنشئ سكربت التهيئة **حسابات الموظفين الافتراضية** (Super Admin، Admin، Agent).
+يُنشئ سكربت التهيئة **بيئة تجريبية كاملة** — حسابات، وكالة، أسطول، عملاء، حجوزات، فواتير وعقود.
 
 > **تأكد أن MongoDB يعمل** قبل تنفيذ الأمر.
 
-من المجلد الجذري:
+### التهيئة الأولى (آمنة — لا يحذف البيانات الموجودة)
 
 ```bash
 npm run seed
 ```
 
-أو من مجلد backend مباشرة:
+### إعادة التهيئة من الصفر (يحذف بيانات الوكالة ويعيد إنشاءها)
 
 ```bash
-npm run seed -w backend
+npm run seed:fresh
 ```
+
+### ما الذي يُنشأ؟
+
+| العنصر | العدد | التفاصيل |
+|--------|-------|----------|
+| Super Admin | 1 | قاعدة البيانات الرئيسية |
+| وكالة | 1 | Inova Ride Tunisie (`inova-ride`) |
+| موظفون | 3 | مدير + 2 موظفين |
+| عملاء | 10 | بيانات تونسية/دولية واقعية |
+| مركبات | 16 | VW, Skoda, Seat, Hyundai i20, Toyota Hilux, utilitaires |
+| سجلات صيانة | ~47 | تاريخ صيانة لكل مركبة |
+| حجوزات | 27 | مكتملة، نشطة، قادمة، ملغاة |
+| فواتير + عقود | 20 | للحجوزات المكتملة |
+
+### حسابات الدخول بعد التهيئة
+
+| الدور | البريد | كلمة المرور | رابط الدخول |
+|-------|--------|-------------|-------------|
+| Super Admin | `superadmin@inovaride.com` | `SuperAdmin123!` | `/api/superadmin/auth/login` |
+| مدير الوكالة | `admin@inovaride.com` | `Admin123!` | `/fr/agency/inova-ride/auth/login` |
+| موظف | `agent@inovaride.com` | `Agent123!` | `/fr/agency/inova-ride/auth/login` |
+| عميل (مثال) | `mohamed.gharbi@gmail.com` | `Client123!` | `/fr/agency/inova-ride/auth/register` |
+
+### الأسطول المُهيّأ
+
+- **Volkswagen** : Polo, Golf, Passat, Tiguan
+- **Skoda** : Fabia, Octavia, Superb
+- **Seat** : Ibiza, Leon, Ateca
+- **Hyundai** : i20
+- **Toyota** : Hilux Double Cab
+- **Utilitaires** : Mercedes Sprinter, Ford Transit, Renault Master, Peugeot Boxer
 
 ### تخصيص بيانات التهيئة (اختياري)
 
-أضف في `backend/.env`:
-
 ```env
-SEED_SUPER_ADMIN_EMAIL=admin@inovaride.com
-SEED_SUPER_ADMIN_PASSWORD=Admin123!
-SEED_ADMIN_EMAIL=manager@inovaride.com
-SEED_ADMIN_PASSWORD=Admin123!
-SEED_AGENT_EMAIL=agent@inovaride.com
-SEED_AGENT_PASSWORD=Agent123!
+SA_EMAIL=superadmin@inovaride.com
+SA_PASSWORD=SuperAdmin123!
+SEED_FRESH=true
 ```
-
-> إذا كان الحساب موجوداً مسبقاً، يتخطى السكربت إنشاءه ولا يُعيد كتابة كلمة المرور.
 
 ---
 
@@ -233,13 +257,14 @@ npm run start -w frontend
 
 ## حسابات الدخول الافتراضية
 
-بعد تنفيذ `npm run seed`:
+بعد `npm run seed` أو `npm run seed:fresh` — راجع قسم التهيئة أعلاه للقائمة الكاملة.
 
-| الدور | البريد الإلكتروني | كلمة المرور |
-|-------|-------------------|-------------|
-| Super Admin | `admin@inovaride.com` | `Admin123!` |
-| Admin | `manager@inovaride.com` | `Admin123!` |
-| Agent | `agent@inovaride.com` | `Agent123!` |
+| الدور | البريد | كلمة المرور |
+|-------|--------|-------------|
+| Super Admin | `superadmin@inovaride.com` | `SuperAdmin123!` |
+| مدير الوكالة | `admin@inovaride.com` | `Admin123!` |
+| موظف | `agent@inovaride.com` | `Agent123!` |
+| عميل | `mohamed.gharbi@gmail.com` | `Client123!` |
 
 > **تحذير:** غيّر كلمات المرور في بيئة الإنتاج ولا تستخدم هذه القيم الافتراضية.
 

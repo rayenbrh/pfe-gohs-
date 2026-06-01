@@ -12,9 +12,15 @@ import { VehicleCard } from './VehicleCard';
 
 interface VehicleSwipeCarouselProps {
   vehicles: Vehicle[];
+  fleetBasePath?: string;
+  bookingBasePath?: string;
 }
 
-export function VehicleSwipeCarousel({ vehicles }: VehicleSwipeCarouselProps) {
+export function VehicleSwipeCarousel({
+  vehicles,
+  fleetBasePath = '/fleet',
+  bookingBasePath = '/booking',
+}: VehicleSwipeCarouselProps) {
   const t = useTranslations('common');
   const containerRef = useRef<HTMLDivElement>(null);
   const [cardWidth, setCardWidth] = useState(320);
@@ -71,7 +77,13 @@ export function VehicleSwipeCarousel({ vehicles }: VehicleSwipeCarouselProps) {
             className="shrink-0"
             style={{ width: cardWidth }}
           >
-            <VehicleCard vehicle={vehicle} index={index} size="large" />
+            <VehicleCard
+              vehicle={vehicle}
+              index={index}
+              size="large"
+              fleetBasePath={fleetBasePath}
+              bookingBasePath={bookingBasePath}
+            />
           </motion.div>
         ))}
       </motion.div>

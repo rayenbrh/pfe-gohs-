@@ -5,22 +5,51 @@ import { useTranslations } from 'next-intl';
 
 import { Link, usePathname } from '@/i18n/routing';
 import { COLORS, FONTS, SHADOWS } from '@/lib/design-system';
+import { useAgencyBasePath } from '@/hooks/useAgencySlugFromPath';
 
-const tabs = [
+const defaultTabs = [
   { href: '/landing', icon: House, key: 'home', match: ['/landing', '/'] },
-  { href: '/fleet', icon: Car, key: 'fleet', match: ['/fleet'] },
+  { href: '/agency/inova-ride/fleet', icon: Car, key: 'fleet', match: ['/fleet', '/agency/'] },
   { href: '/booking', icon: CalendarPlus, key: 'book', match: ['/booking'], primary: true },
   { href: '/auth/login', icon: User, key: 'account', match: ['/auth/login', '/auth/register'] },
 ] as const;
 
-function isActive(pathname: string, match: readonly string[]) {
-  return match.some((m) => pathname === m || pathname.startsWith(`${m}/`));
+function isActive(pathname: string, match: readonly string[], exact = false) {
+  return match.some((m) =>
+    exact ? pathname === m : pathname === m || pathname.startsWith(`${m}/`),
+  );
 }
 
 export function BottomTabBar() {
   const t = useTranslations('nav');
   const tCommon = useTranslations('common');
   const pathname = usePathname();
+  const agencyBase = useAgencyBasePath();
+
+  const tabs = agencyBase
+    ? [
+        { href: agencyBase, icon: House, key: 'home', match: [agencyBase], exact: true },
+        {
+          href: `${agencyBase}/fleet`,
+          icon: Car,
+          key: 'fleet',
+          match: [`${agencyBase}/fleet`],
+        },
+        {
+          href: `${agencyBase}/booking`,
+          icon: CalendarPlus,
+          key: 'book',
+          match: [`${agencyBase}/booking`],
+          primary: true,
+        },
+        {
+          href: `${agencyBase}/auth/login`,
+          icon: User,
+          key: 'account',
+          match: [`${agencyBase}/auth/login`, `${agencyBase}/auth/register`],
+        },
+      ]
+    : defaultTabs;
 
   return (
     <nav
@@ -36,7 +65,11 @@ export function BottomTabBar() {
     >
       <div className="mx-auto flex h-16 max-w-lg items-end justify-around px-2">
         {tabs.map((tab) => {
-          const active = isActive(pathname, tab.match);
+          const active = isActive(
+            pathname,
+            tab.match,
+            'exact' in tab && Boolean(tab.exact),
+          );
           const Icon = tab.icon;
           const label = t(`tab_${tab.key}` as 'tab_home');
 

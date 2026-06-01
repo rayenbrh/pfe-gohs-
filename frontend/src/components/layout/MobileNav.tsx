@@ -15,6 +15,8 @@ interface MobileNavProps {
   open: boolean;
   onClose: () => void;
   links: readonly { href: string; label: string }[];
+  loginHref?: string;
+  bookingHref?: string;
 }
 
 const listVariants = {
@@ -29,7 +31,13 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
 };
 
-export function MobileNav({ open, onClose, links }: MobileNavProps) {
+export function MobileNav({
+  open,
+  onClose,
+  links,
+  loginHref = '/auth/login',
+  bookingHref = '/booking',
+}: MobileNavProps) {
   const t = useTranslations('nav');
 
   return (
@@ -104,7 +112,7 @@ export function MobileNav({ open, onClose, links }: MobileNavProps) {
               ))}
               <motion.li variants={itemVariants}>
                 <Link
-                  href="/auth/login"
+                  href={loginHref}
                   onClick={onClose}
                   className="block border-b py-5"
                   style={{
@@ -125,7 +133,7 @@ export function MobileNav({ open, onClose, links }: MobileNavProps) {
               style={{ borderColor: COLORS.borderSubtle }}
             >
               <LanguageSwitcher />
-              <Link href="/booking" onClick={onClose}>
+              <Link href={bookingHref} onClick={onClose}>
                 <Button fullWidth>{t('book_now')}</Button>
               </Link>
             </div>

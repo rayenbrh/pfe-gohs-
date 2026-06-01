@@ -6,10 +6,13 @@ import { useMemo, useRef, useState } from 'react';
 
 import { VehicleCard } from '@/components/fleet/VehicleCard';
 import { Button } from '@/components/ui/Button';
-import { Link } from '@/i18n/routing';
-import { landingVehicles } from '@/lib/mock-vehicles';
+import { Spinner } from '@/components/ui/Spinner';
+import { useAgencyFleet } from '@/hooks/useAgencyFleet';
+import { useAgencySlugFromPath } from '@/hooks/useAgencySlugFromPath';
+import { agencyFleetPath } from '@/lib/agency-fleet-api';
 import { COLORS, FONTS, SHADOWS } from '@/lib/design-system';
 import { cn } from '@/lib/utils';
+import { Link } from '@/i18n/routing';
 import type { VehicleCategory } from '@/types/vehicle';
 
 import { SectionBadge } from './SectionBadge';
@@ -27,20 +30,28 @@ const filterTranslationKey: Record<FilterKey, string> = {
   van: 'filter_van',
 };
 
+/** Default demo agency when not on an agency route (global landing). */
+const DEMO_AGENCY_SLUG = 'inova-ride';
+
 export function FleetPreviewSection() {
   const t = useTranslations('landing.fleet');
   const tFleet = useTranslations('fleet');
+  const pathSlug = useAgencySlugFromPath();
+  const agencySlug = pathSlug ?? DEMO_AGENCY_SLUG;
+  const fleetBase = agencyFleetPath(agencySlug);
+  const bookingBase = pathSlug ? `/agency/${pathSlug}/booking` : `/agency/${DEMO_AGENCY_SLUG}/booking`;
+
+  const { data: vehicles = [], isLoading } = useAgencyFleet(agencySlug, { limit: 6 });
   const [active, setActive] = useState<FilterKey>('all');
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-50px' });
 
   const filtered = useMemo(
-    () =>
-      active === 'all'
-        ? landingVehicles
-        : landingVehicles.filter((v) => v.category === active),
-    [active],
+    () => (active === 'all' ? vehicles : vehicles.filter((v) => v.category === active)),
+    [active, vehicles],
   );
+
+  const preview = filtered.slice(0, 6);
 
   return (
     <section ref={ref} className="relative" style={{ padding: '80px 24px' }}>
@@ -80,12 +91,6 @@ export function FleetPreviewSection() {
                   color: isActive ? COLORS.textPrimary : COLORS.textSecondary,
                   boxShadow: isActive ? SHADOWS.glowPurpleSm : 'none',
                 }}
-                onMouseEnter={(e) => {
-                  if (!isActive) e.currentTarget.style.borderColor = COLORS.borderStrong;
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) e.currentTarget.style.borderColor = COLORS.borderDefault;
-                }}
               >
                 {tFleet(filterTranslationKey[key])}
               </motion.button>
@@ -93,20 +98,32 @@ export function FleetPreviewSection() {
           })}
         </motion.div>
 
-        <motion.div layout className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((vehicle, i) => (
-            <motion.div
-              key={vehicle.id}
-              layout
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.3 }}
-            >
-              <VehicleCard vehicle={vehicle} index={i} />
-            </motion.div>
-          ))}
-        </motion.div>
+        {isLoading ? (
+          <div className="mt-12 flex justify-center py-16">
+            <Spinner size="lg" />
+          </div>
+        ) : preview.length === 0 ? (
+          <p className="mt-12 text-center text-text-muted">{tFleet('empty_title')}</p>
+        ) : (
+          <motion.div layout className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {preview.map((vehicle, i) => (
+              <motion.div
+                key={vehicle.id}
+                layout
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <VehicleCard
+                  vehicle={vehicle}
+                  index={i}
+                  fleetBasePath={fleetBase}
+                  bookingBasePath={bookingBase}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
 
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -114,7 +131,7 @@ export function FleetPreviewSection() {
           transition={{ duration: 0.5, delay: 0.16 }}
           className="mt-12 flex justify-center"
         >
-          <Link href="/fleet">
+          <Link href={fleetBase}>
             <Button variant="ghost" size="lg">
               {t('view_all')}
             </Button>

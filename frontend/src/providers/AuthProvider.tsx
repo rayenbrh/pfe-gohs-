@@ -10,10 +10,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isAuthenticated) return; // already initialised — don't re-run
 
-    // Detect agency slug from URL so /auth/me hits the correct tenant endpoint
     const m = window.location.pathname.match(/\/agency\/([^/]+)/);
-    const slug = m?.[1] ?? undefined;
-    void initFromStorage(slug);
+    const slugFromUrl = m?.[1];
+    const slugFromStorage = localStorage.getItem('agency_slug') ?? undefined;
+    void initFromStorage(slugFromUrl ?? slugFromStorage);
   }, []); // run once on mount only
 
   return <>{children}</>;

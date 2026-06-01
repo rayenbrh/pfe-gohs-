@@ -1,18 +1,12 @@
-import { notFound } from 'next/navigation';
+import { redirect } from '@/i18n/routing';
 
-import { VehicleDetailView } from '@/components/fleet/VehicleDetailView';
-import { getVehicleById } from '@/lib/fleet-data';
-
-interface FleetDetailPageProps {
-  params: { id: string };
+interface FleetDetailRedirectProps {
+  params: { locale: string; id: string };
 }
 
-export default function FleetDetailPage({ params }: FleetDetailPageProps) {
-  const vehicle = getVehicleById(params.id);
-
-  if (!vehicle) {
-    notFound();
-  }
-
-  return <VehicleDetailView vehicle={vehicle} />;
+export default function FleetDetailRedirectPage({ params }: FleetDetailRedirectProps) {
+  redirect({
+    href: `/agency/inova-ride/fleet/${params.id}`,
+    locale: params.locale,
+  });
 }

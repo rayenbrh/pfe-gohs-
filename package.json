@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "concurrently -k -n backend,frontend -c blue,magenta \"npm run dev -w backend\" \"npm run dev -w frontend\"",
     "seed": "npm run seed -w backend",
+    "seed:fresh": "npm run seed:fresh -w backend",
     "dev:backend": "npm run dev -w backend",
     "dev:frontend": "npm run dev -w frontend",
     "build": "npm run build -w backend && npm run build -w frontend",

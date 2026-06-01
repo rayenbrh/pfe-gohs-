@@ -17,6 +17,7 @@ interface VehicleBookingPanelProps {
   vehicle: Vehicle;
   initialStart?: string;
   initialEnd?: string;
+  bookingBasePath?: string;
 }
 
 function BookingFormContent({
@@ -119,6 +120,7 @@ export function VehicleBookingPanel({
   vehicle,
   initialStart,
   initialEnd,
+  bookingBasePath = '/booking',
 }: VehicleBookingPanelProps) {
   const t = useTranslations('fleet');
   const { formatPrice } = useLocaleFormat();
@@ -141,8 +143,8 @@ export function VehicleBookingPanel({
 
   const bookingHref =
     startDate && endDate
-      ? `/booking?vehicleId=${vehicle.id}&start=${formatDateISO(startDate)}&end=${formatDateISO(endDate)}`
-      : `/booking?vehicleId=${vehicle.id}`;
+      ? `${bookingBasePath}?vehicleId=${vehicle.id}&start=${formatDateISO(startDate)}&end=${formatDateISO(endDate)}`
+      : `${bookingBasePath}?vehicleId=${vehicle.id}`;
 
   const formProps = {
     vehicle,

@@ -25,7 +25,9 @@ function buildListFilter(query: Record<string, string | undefined>): FilterQuery
     isActive: { $ne: false },
   };
 
-  if (query.isAvailable !== undefined) {
+  if (query.all === 'true') {
+    // Fleet catalogue — all active vehicles (available + rented/maintenance)
+  } else if (query.isAvailable !== undefined) {
     filter.isAvailable = query.isAvailable === 'true';
   } else {
     filter.isAvailable = true;

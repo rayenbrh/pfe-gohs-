@@ -22,9 +22,10 @@ const categoryVariant: Record<VehicleCategory, 'purple' | 'cyan' | 'success' | '
 
 interface VehicleDetailViewProps {
   vehicle: Vehicle;
+  bookingBasePath?: string;
 }
 
-export function VehicleDetailView({ vehicle }: VehicleDetailViewProps) {
+export function VehicleDetailView({ vehicle, bookingBasePath = '/booking' }: VehicleDetailViewProps) {
   const t = useTranslations('fleet');
   const tCommon = useTranslations('common');
   const { formatNumber } = useLocaleFormat();
@@ -121,7 +122,7 @@ export function VehicleDetailView({ vehicle }: VehicleDetailViewProps) {
         </div>
 
         <div className="lg:w-[40%]">
-          <VehicleBookingPanel vehicle={vehicle} />
+          <VehicleBookingPanel vehicle={vehicle} bookingBasePath={bookingBasePath} />
         </div>
       </div>
       <div className="h-32 lg:hidden" aria-hidden />

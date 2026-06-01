@@ -7,7 +7,12 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { Link } from '@/i18n/routing';
+import {
+  agencyAuthLoginPath,
+  DEFAULT_AGENCY_SLUG,
+} from '@/lib/agency-context';
 import { COLORS } from '@/lib/design-system';
+import { useAgencyBasePath } from '@/hooks/useAgencySlugFromPath';
 import { cn } from '@/lib/utils';
 
 import { Logo } from './Logo';
@@ -17,12 +22,21 @@ import { NavLink } from './NavLink';
 export function Navbar() {
   const t = useTranslations('nav');
   const [mobileOpen, setMobileOpen] = useState(false);
+  const agencyBase = useAgencyBasePath();
+  const slug = agencyBase?.replace('/agency/', '') ?? DEFAULT_AGENCY_SLUG;
 
   const centerLinks = [
-    { href: '/fleet', label: t('fleet') },
-    { href: '/landing#how-it-works', label: t('how_it_works') },
+    { href: agencyBase ? `${agencyBase}/fleet` : `/agency/${DEFAULT_AGENCY_SLUG}/fleet`, label: t('fleet') },
+    {
+      href: agencyBase ? `${agencyBase}#how-it-works` : '/landing#how-it-works',
+      label: t('how_it_works'),
+    },
     { href: '/landing#contact', label: t('contact') },
   ] as const;
+
+  const loginHref = agencyBase ? agencyAuthLoginPath(slug) : '/auth/login';
+  const bookingHref = agencyBase ? `${agencyBase}/booking` : '/booking';
+  const homeHref = agencyBase ?? '/';
 
   return (
     <>
@@ -37,7 +51,7 @@ export function Navbar() {
       >
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:h-[72px] rtl:flex-row-reverse">
           {/* Left — logo */}
-          <Link href="/" className="shrink-0">
+          <Link href={homeHref} className="shrink-0">
             <Logo />
           </Link>
 
@@ -53,12 +67,12 @@ export function Navbar() {
           {/* Right — actions */}
           <div className="flex items-center gap-2 sm:gap-3 rtl:flex-row-reverse">
             <LanguageSwitcher />
-            <Link href="/auth/login" className="hidden sm:inline-flex">
+            <Link href={loginHref} className="hidden sm:inline-flex">
               <Button variant="ghost" size="sm">
                 {t('login')}
               </Button>
             </Link>
-            <Link href="/booking" className="hidden sm:inline-flex">
+            <Link href={bookingHref} className="hidden sm:inline-flex">
               <Button size="sm">{t('book_now')}</Button>
             </Link>
             <button
@@ -78,7 +92,13 @@ export function Navbar() {
 
       {/* Full-screen nav only on tablet; phones use BottomTabBar */}
       <div className="hidden sm:block md:hidden">
-        <MobileNav open={mobileOpen} onClose={() => setMobileOpen(false)} links={centerLinks} />
+        <MobileNav
+          open={mobileOpen}
+          onClose={() => setMobileOpen(false)}
+          links={centerLinks}
+          loginHref={loginHref}
+          bookingHref={bookingHref}
+        />
       </div>
     </>
   );
